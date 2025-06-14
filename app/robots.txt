@@ -1,0 +1,19 @@
+User-Agent: *
+Allow: /
+Disallow: /api/
+Disallow: /dashboard/
+Disallow: /auth/callback
+Disallow: /reset-password
+Disallow: /private/
+Disallow: /admin/
+
+User-Agent: Googlebot
+Allow: /
+Disallow: /api/
+Disallow: /dashboard/
+Disallow: /auth/callback
+Disallow: /reset-password
+Disallow: /private/
+Disallow: /admin/
+
+Sitemap: https://edt.techrehub.co.zw//sitemap.xml
