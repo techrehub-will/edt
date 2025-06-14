@@ -13,7 +13,6 @@ export default function robots(): MetadataRoute.Robots {
           '/dashboard/',
           '/auth/callback',
           '/reset-password',
-          '/_next/',
           '/private/',
           '/admin/',
         ],
@@ -32,6 +31,5 @@ export default function robots(): MetadataRoute.Robots {
       },
     ],
     sitemap: `${baseUrl}/sitemap.xml`,
-    host: baseUrl,
   }
 }
