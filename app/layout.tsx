@@ -190,6 +190,7 @@ export default function RootLayout({
           }}
         />
       <meta name="msvalidate.01" content="CEDC65F3D2DA389E6CDCCF3BEA1898BE" />
+      <meta name="yandex-verification" content="68470d77f453cb04" />
       </head>
       <body className={inter.className} suppressHydrationWarning>
         <SupabaseProvider>
