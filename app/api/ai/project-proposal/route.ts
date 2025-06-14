@@ -4,9 +4,26 @@ export async function POST(request: NextRequest) {
   try {
     const { title, objective, system, userContext } = await request.json()
 
+    // Validate required fields
+    if (!title || !objective || !system) {
+      return NextResponse.json(
+        { 
+          success: false,
+          error: "Missing required fields: title, objective, and system are required" 
+        }, 
+        { status: 400 }
+      )
+    }
+
     // Check if we have a valid Gemini API key
     if (!process.env.GEMINI_API_KEY) {
-      return generateDemoProposal(title, objective, system)
+      return NextResponse.json(
+        { 
+          success: false,
+          error: "AI service is not configured. Please contact your administrator." 
+        }, 
+        { status: 503 }
+      )
     }
 
     try {
@@ -67,17 +84,46 @@ export async function POST(request: NextRequest) {
 
       Focus on engineering best practices, safety considerations, and practical implementation.
       Make the proposal professional and suitable for management review.
+      Ensure all arrays have at least 2-3 items and provide realistic timelines and costs.
       `
 
       const result = await model.generateContent(prompt)
+      
+      if (!result || !result.response) {
+        throw new Error("No response received from AI service")
+      }
+
       const response = await result.response
       const text = response.text()
 
+      if (!text || text.trim().length === 0) {
+        throw new Error("Empty response from AI service")
+      }
+
       let proposal
       try {
-        proposal = JSON.parse(text)
+        // Clean the response text to extract JSON
+        const jsonMatch = text.match(/\{[\s\S]*\}/)
+        if (!jsonMatch) {
+          throw new Error("No valid JSON found in AI response")
+        }
+        
+        proposal = JSON.parse(jsonMatch[0])
+        
+        // Validate the proposal structure
+        if (!proposal.proposal || !proposal.recommendations || !proposal.nextSteps) {
+          throw new Error("Invalid proposal structure returned from AI")
+        }
+
       } catch (parseError) {
-        return generateDemoProposal(title, objective, system)
+        console.error("Failed to parse AI response:", parseError)
+        return NextResponse.json(
+          { 
+            success: false,
+            error: "Failed to process AI response. Please try again." 
+          }, 
+          { status: 502 }
+        )
       }
 
       return NextResponse.json({
@@ -85,119 +131,50 @@ export async function POST(request: NextRequest) {
         proposal,
         mode: "ai",
       })
-    } catch (aiError) {
-      console.log("AI generation error, using fallback:", aiError)
-      return generateDemoProposal(title, objective, system)
+
+    } catch (aiError: any) {
+      console.error("AI generation error:", aiError)
+      
+      // Provide specific error messages based on error type
+      let errorMessage = "AI service is temporarily unavailable. Please try again later."
+      
+      if (aiError.message?.includes("API key")) {
+        errorMessage = "AI service authentication failed. Please contact your administrator."
+      } else if (aiError.message?.includes("quota") || aiError.message?.includes("limit")) {
+        errorMessage = "AI service quota exceeded. Please try again later or contact your administrator."
+      } else if (aiError.message?.includes("network") || aiError.message?.includes("connection")) {
+        errorMessage = "Network error accessing AI service. Please check your connection and try again."
+      }
+
+      return NextResponse.json(
+        { 
+          success: false,
+          error: errorMessage 
+        }, 
+        { status: 503 }
+      )
     }
-  } catch (error) {
+
+  } catch (error: any) {
     console.error("Error generating project proposal:", error)
-    return NextResponse.json({ error: "Failed to generate project proposal" }, { status: 500 })
-  }
-}
+    
+    // Handle different types of errors
+    if (error.name === "SyntaxError") {
+      return NextResponse.json(
+        { 
+          success: false,
+          error: "Invalid request format. Please check your input and try again." 
+        }, 
+        { status: 400 }
+      )
+    }
 
-function generateDemoProposal(title: string, objective: string, system: string) {
-  const proposal = {
-    proposal: {
-      executiveSummary: `This project aims to ${objective.toLowerCase()} through systematic improvement of the ${system} system. The initiative will enhance operational efficiency, reduce downtime, and improve overall system reliability.`,
-      problemStatement: `Current ${system} system operations face challenges that impact productivity and efficiency. This project addresses these issues through targeted improvements and optimization strategies.`,
-      proposedSolution: `Implement a comprehensive improvement program that includes system analysis, optimization recommendations, and phased implementation of enhancements to the ${system} system.`,
-      scope: {
-        included: [
-          `${system} system analysis and assessment`,
-          "Improvement recommendations development",
-          "Implementation planning and execution",
-          "Performance monitoring and validation",
-          "Documentation and knowledge transfer",
-        ],
-        excluded: [
-          "Major equipment replacement (unless specifically required)",
-          "Other system modifications outside project scope",
-          "Long-term maintenance contracts",
-        ],
-      },
-      timeline: {
-        phases: [
-          {
-            name: "Analysis and Planning",
-            duration: "2 weeks",
-            deliverables: ["System assessment report", "Improvement recommendations", "Implementation plan"],
-          },
-          {
-            name: "Implementation Phase 1",
-            duration: "3 weeks",
-            deliverables: ["Initial improvements implemented", "Progress report", "Performance metrics"],
-          },
-          {
-            name: "Implementation Phase 2",
-            duration: "2 weeks",
-            deliverables: ["Final improvements completed", "System validation", "Documentation"],
-          },
-          {
-            name: "Validation and Handover",
-            duration: "1 week",
-            deliverables: ["Performance validation", "Final report", "Knowledge transfer"],
-          },
-        ],
-        totalDuration: "8 weeks",
-      },
-      resources: {
-        personnel: ["Project engineer", "System technician", "Safety coordinator"],
-        equipment: ["Testing equipment", "Installation tools", "Safety equipment"],
-        materials: ["Replacement components", "Consumables", "Documentation materials"],
-      },
-      riskAssessment: [
-        {
-          risk: "System downtime during implementation",
-          probability: "Medium",
-          impact: "Medium",
-          mitigation: "Schedule work during planned maintenance windows",
-        },
-        {
-          risk: "Unexpected technical complications",
-          probability: "Low",
-          impact: "High",
-          mitigation: "Thorough pre-implementation analysis and contingency planning",
-        },
-        {
-          risk: "Resource availability constraints",
-          probability: "Low",
-          impact: "Medium",
-          mitigation: "Early resource planning and backup arrangements",
-        },
-      ],
-      successCriteria: [
-        "Improved system efficiency by measurable percentage",
-        "Reduced unplanned downtime",
-        "Enhanced system reliability metrics",
-        "Positive stakeholder feedback",
-        "Complete documentation and knowledge transfer",
-      ],
-      budget: {
-        estimated: "$15,000 - $25,000",
-        breakdown: [
-          "Personnel costs: $8,000 - $12,000",
-          "Materials and components: $5,000 - $8,000",
-          "Equipment and tools: $2,000 - $5,000",
-        ],
-      },
-    },
-    recommendations: [
-      "Conduct thorough stakeholder consultation before implementation",
-      "Establish clear communication channels throughout the project",
-      "Implement robust change management procedures",
-      "Plan for comprehensive testing and validation",
-    ],
-    nextSteps: [
-      "Obtain management approval for project proposal",
-      "Secure necessary resources and budget allocation",
-      "Finalize project timeline and resource assignments",
-      "Begin detailed system analysis and planning phase",
-    ],
+    return NextResponse.json(
+      { 
+        success: false,
+        error: "An unexpected error occurred. Please try again later." 
+      }, 
+      { status: 500 }
+    )
   }
-
-  return NextResponse.json({
-    success: true,
-    proposal,
-    mode: "demo",
-  })
 }

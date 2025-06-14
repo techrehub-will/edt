@@ -26,7 +26,6 @@ export function AIInsightsPanel() {
   const [insights, setInsights] = useState<AIInsight[]>([])
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
-  const [mode, setMode] = useState<"ai" | "demo" | "unknown">("unknown")
   const [error, setError] = useState<string | null>(null)
   const supabase = createClientComponentClient()
 
@@ -42,9 +41,7 @@ export function AIInsightsPanel() {
       } = await supabase.auth.getUser()
 
       if (!user) {
-        // Load demo insights
-        setInsights(getDemoInsights())
-        setMode("demo")
+        setError("Please sign in to view AI insights")
         setLoading(false)
         return
       }
@@ -54,21 +51,16 @@ export function AIInsightsPanel() {
         .select("*")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
-        .limit(10)
+        .limit(20)
 
       if (error) {
-        console.log("Database error, using demo insights:", error)
-        setInsights(getDemoInsights())
-        setMode("demo")
-      } else {
-        setInsights(data || [])
-        setMode(data && data.length > 0 ? "ai" : "demo")
+        throw error
       }
+
+      setInsights(data || [])
     } catch (error) {
       console.error("Error fetching insights:", error)
-      setInsights(getDemoInsights())
-      setMode("demo")
-      setError("Using demo mode - database connection unavailable")
+      setError("Failed to load insights. Please try again.")
     } finally {
       setLoading(false)
     }
@@ -90,72 +82,21 @@ export function AIInsightsPanel() {
         throw new Error(result.error || "Failed to generate insights")
       }
 
-      // If demo mode returned insights directly, use them
-      if (result.mode === "demo" && result.data) {
-        setInsights(result.data)
-        setMode("demo")
-      } else {
-        // Refresh insights from database
-        await fetchInsights()
-        setMode(result.mode || "ai")
-      }
-
-      if (result.mode === "demo") {
-        setError("Demo mode - AI insights generated without external API")
+      // Refresh insights from database
+      await fetchInsights()
+      
+      // Show success message if needed
+      if (result.message) {
+        // You could add a toast notification here if available
+        console.log(result.message)
       }
     } catch (error) {
       console.error("Error generating insights:", error)
       setError(error instanceof Error ? error.message : "Failed to generate insights")
-      // Fallback to demo insights
-      setInsights(getDemoInsights())
-      setMode("demo")
     } finally {
       setGenerating(false)
     }
   }
-
-  const getDemoInsights = (): AIInsight[] => [
-    {
-      type: "trend",
-      title: "Development Activity Pattern",
-      description:
-        "Based on typical engineering development patterns, you're showing consistent engagement with technical problem-solving. Consider documenting more of your daily troubleshooting activities to build a comprehensive knowledge base.",
-      confidence: 85,
-      priority: "medium",
-      category: "Development",
-      actionable: true,
-    },
-    {
-      type: "suggestion",
-      title: "Goal Setting Optimization",
-      description:
-        "Engineering professionals typically achieve better outcomes with SMART goals that include specific technical milestones. Consider breaking larger objectives into weekly technical tasks.",
-      confidence: 90,
-      priority: "high",
-      category: "Goals",
-      actionable: true,
-    },
-    {
-      type: "prediction",
-      title: "Skill Development Trajectory",
-      description:
-        "Your focus on system troubleshooting suggests strong diagnostic skills are developing. This foundation typically leads to expertise in preventive maintenance and system optimization within 6-12 months.",
-      confidence: 75,
-      priority: "medium",
-      category: "Technical",
-      actionable: false,
-    },
-    {
-      type: "pattern",
-      title: "Learning Style Analysis",
-      description:
-        "Engineers who actively track their problem-solving activities typically retain 40% more technical knowledge. Your systematic approach to documentation indicates strong analytical learning preferences.",
-      confidence: 80,
-      priority: "low",
-      category: "Development",
-      actionable: true,
-    },
-  ]
 
   const getInsightIcon = (type: string) => {
     switch (type) {
@@ -219,18 +160,14 @@ export function AIInsightsPanel() {
 
   return (
     <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
+      <CardHeader>        <div className="flex items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
               <Brain className="h-5 w-5" />
               AI Insights
-              {mode === "demo" && <Badge variant="outline">Demo Mode</Badge>}
             </CardTitle>
             <CardDescription>
-              {mode === "demo"
-                ? "Demo insights based on typical engineering development patterns"
-                : "AI-powered analysis of your development patterns and suggestions"}
+              AI-powered analysis of your development patterns and personalized recommendations
             </CardDescription>
           </div>
           <Button onClick={generateInsights} disabled={generating} size="sm">
@@ -244,16 +181,14 @@ export function AIInsightsPanel() {
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>{error}</AlertDescription>
           </Alert>
-        )}
-
-        {insights.length === 0 ? (
+        )}        {insights.length === 0 ? (
           <div className="text-center py-8">
             <Brain className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-sm text-muted-foreground mb-4">
-              No insights available yet. Generate your first AI analysis!
+              No insights available yet. Generate your first AI analysis based on your goals, projects, and technical logs!
             </p>
             <Button onClick={generateInsights} disabled={generating}>
-              {generating ? "Generating..." : "Generate Insights"}
+              {generating ? "Generating..." : "Generate AI Insights"}
             </Button>
           </div>
         ) : (
@@ -347,9 +282,8 @@ function InsightCard({ insight }: { insight: AIInsight }) {
             <Badge variant="outline" className="text-xs">
               {insight.category}
             </Badge>
-          </div>
-          <span className="text-xs text-muted-foreground">
-            {insight.created_at ? new Date(insight.created_at).toLocaleDateString() : "Demo"}
+          </div>          <span className="text-xs text-muted-foreground">
+            {insight.created_at ? new Date(insight.created_at).toLocaleDateString() : "Recent"}
           </span>
         </div>
       </CardContent>

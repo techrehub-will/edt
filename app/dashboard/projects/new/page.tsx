@@ -3,62 +3,66 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
-import { useToast } from "@/components/ui/use-toast"
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { useToast } from "@/hooks/use-toast"
 import { useSupabase } from "@/lib/supabase-provider"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import * as z from "zod"
+import { format } from "date-fns"
+import { CalendarIcon, Plus } from "lucide-react"
 import { ProjectProposalGenerator } from "@/components/ai/project-proposal-generator"
-
-const formSchema = z.object({
-  title: z.string().min(2, {
-    message: "Title must be at least 2 characters.",
-  }),
-  objective: z.string().min(10, {
-    message: "Objective must be at least 10 characters.",
-  }),
-  system: z.string().min(1, {
-    message: "Please select a system.",
-  }),
-  status: z.string().min(1, {
-    message: "Please select a status.",
-  }),
-  timeline: z.string().min(2, {
-    message: "Please provide a timeline.",
-  }),
-  contractor_involved: z.boolean().default(false),
-  results: z.string().optional(),
-})
 
 export default function NewProjectPage() {
   const router = useRouter()
   const { supabase } = useSupabase()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      title: "",
-      objective: "",
-      system: "",
-      status: "Planned",
-      timeline: "",
-      contractor_involved: false,
-      results: "",
-    },
+    // Form state using the enhanced project structure
+  const [formData, setFormData] = useState({
+    title: "",
+    objective: "",
+    system: "",
+    priority: "Medium",
+    timeline: "", // Required field for database
+    start_date: undefined as Date | undefined,
+    target_completion_date: undefined as Date | undefined,
+    progress_percentage: 0,
+    budget_estimated: "",
+    budget_actual: "",
+    contractor_involved: false,
+    tags: [] as string[],
+    assigned_to: [] as string[],
+    dependencies: [] as string[],
+    risks: [] as string[],
+    success_criteria: [] as string[]
   })
+  
+  // States for array field management
+  const [newTag, setNewTag] = useState("")
+  const [newDependency, setNewDependency] = useState("")
+  const [newRisk, setNewRisk] = useState("")
+  const [newCriteria, setNewCriteria] = useState("")
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
     setIsLoading(true)
 
-    try {
+    try {      // Validation
+      if (!formData.title || !formData.objective || !formData.system || !formData.timeline) {
+        toast({
+          title: "Validation Error",
+          description: "Please fill in all required fields (Title, Objective, System, Timeline).",
+          variant: "destructive",
+        })
+        return
+      }
+
       const {
         data: { user },
       } = await supabase.auth.getUser()
@@ -70,19 +74,30 @@ export default function NewProjectPage() {
           variant: "destructive",
         })
         return
+      }      // Prepare data for database insertion with enhanced schema
+      const projectData = {
+        user_id: user.id,
+        title: formData.title,
+        objective: formData.objective,
+        system: formData.system,
+        status: "Planned", // Default status for new projects
+        timeline: formData.timeline, // Required field
+        priority: formData.priority,
+        start_date: formData.start_date?.toISOString().split('T')[0] || null,
+        target_completion_date: formData.target_completion_date?.toISOString().split('T')[0] || null,
+        progress_percentage: formData.progress_percentage || 0,
+        budget_estimated: formData.budget_estimated ? parseFloat(formData.budget_estimated) : null,
+        budget_actual: formData.budget_actual ? parseFloat(formData.budget_actual) : null,
+        contractor_involved: formData.contractor_involved,
+        tags: formData.tags.length > 0 ? formData.tags : null,
+        assigned_to: formData.assigned_to.length > 0 ? formData.assigned_to : null,
+        dependencies: formData.dependencies.length > 0 ? formData.dependencies : null,
+        risks: formData.risks.length > 0 ? formData.risks : null,
+        success_criteria: formData.success_criteria.length > 0 ? formData.success_criteria : null,
+        images: []
       }
 
-      const { error } = await supabase.from("improvement_projects").insert({
-        user_id: user.id,
-        title: values.title,
-        objective: values.objective,
-        system: values.system,
-        status: values.status,
-        timeline: values.timeline,
-        contractor_involved: values.contractor_involved,
-        results: values.results || "",
-        images: [],
-      })
+      const { error } = await supabase.from("improvement_projects").insert(projectData)
 
       if (error) {
         throw error
@@ -106,156 +121,352 @@ export default function NewProjectPage() {
     }
   }
 
+  // Helper function to handle generic list item operations
+  const addListItem = (list: string[], newItem: string, setListFn: (list: string[]) => void, setNewItemFn: (item: string) => void) => {
+    if (newItem.trim() && !list.includes(newItem.trim())) {
+      setListFn([...list, newItem.trim()])
+      setNewItemFn("")
+    }
+  }
+
+  const removeListItem = (list: string[], itemToRemove: string, setListFn: (list: string[]) => void) => {
+    setListFn(list.filter(item => item !== itemToRemove))
+  }
+
+  // Tag handlers
+  const addTag = () => addListItem(formData.tags, newTag, 
+    (tags) => setFormData(prev => ({ ...prev, tags })), 
+    setNewTag)
+  
+  const removeTag = (tagToRemove: string) => removeListItem(
+    formData.tags, 
+    tagToRemove, 
+    (tags) => setFormData(prev => ({ ...prev, tags }))
+  )
+
+  // Dependency handlers
+  const addDependency = () => addListItem(
+    formData.dependencies, 
+    newDependency, 
+    (dependencies) => setFormData(prev => ({ ...prev, dependencies })), 
+    setNewDependency
+  )
+  
+  const removeDependency = (depToRemove: string) => removeListItem(
+    formData.dependencies, 
+    depToRemove, 
+    (dependencies) => setFormData(prev => ({ ...prev, dependencies }))
+  )
+
+  // Risk handlers
+  const addRisk = () => addListItem(
+    formData.risks, 
+    newRisk, 
+    (risks) => setFormData(prev => ({ ...prev, risks })), 
+    setNewRisk
+  )
+  
+  const removeRisk = (riskToRemove: string) => removeListItem(
+    formData.risks, 
+    riskToRemove, 
+    (risks) => setFormData(prev => ({ ...prev, risks }))
+  )
+
+  // Success criteria handlers
+  const addCriteria = () => addListItem(
+    formData.success_criteria, 
+    newCriteria, 
+    (criteria) => setFormData(prev => ({ ...prev, success_criteria: criteria })), 
+    setNewCriteria
+  )
+  
+  const removeCriteria = (criteriaToRemove: string) => removeListItem(
+    formData.success_criteria, 
+    criteriaToRemove, 
+    (criteria) => setFormData(prev => ({ ...prev, success_criteria: criteria }))
+  )
+
+  const addAssignee = () => {
+    const email = prompt("Enter team member email:")
+    if (email && email.trim() && !formData.assigned_to.includes(email.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        assigned_to: [...prev.assigned_to, email.trim()]
+      }))
+    }
+  }
+
+  const removeAssignee = (emailToRemove: string) => {
+    setFormData(prev => ({
+      ...prev,
+      assigned_to: prev.assigned_to.filter(email => email !== emailToRemove)
+    }))
+  }
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-4xl">
       <Card className="border-t-4 border-t-amber-500">
         <CardHeader>
           <CardTitle>Create Improvement Project</CardTitle>
-          <CardDescription>Document a Kaizen-style initiative or contractor-managed job</CardDescription>
+          <CardDescription>Document a comprehensive improvement initiative with enhanced project tracking</CardDescription>
         </CardHeader>
         <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Project Title</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Optimize Hydraulic System" {...field} />
-                    </FormControl>
-                    <FormDescription>A clear, concise title for your improvement project</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+          <div className="max-h-[70vh] overflow-y-auto pr-2">
+            <form onSubmit={handleSubmit} className="space-y-6 py-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <Label htmlFor="title">Project Title *</Label>
+                  <Input
+                    id="title"
+                    value={formData.title}
+                    onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                    placeholder="Enter project title"
+                    required
+                  />
+                </div>
 
-              <FormField
-                control={form.control}
-                name="objective"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Objective/Justification</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Describe the purpose and justification for this project"
-                        className="min-h-24"
-                        {...field}
+                <div className="md:col-span-2">
+                  <Label htmlFor="objective">Objective *</Label>
+                  <Textarea
+                    id="objective"
+                    value={formData.objective}
+                    onChange={(e) => setFormData(prev => ({ ...prev, objective: e.target.value }))}
+                    placeholder="Describe the project objective and expected outcomes"
+                    rows={3}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="system">System/Area *</Label>
+                  <Select value={formData.system} onValueChange={(value) => setFormData(prev => ({ ...prev, system: value }))}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select system" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="PLC">PLC</SelectItem>
+                      <SelectItem value="SCADA">SCADA</SelectItem>
+                      <SelectItem value="Hydraulics">Hydraulics</SelectItem>
+                      <SelectItem value="Pneumatics">Pneumatics</SelectItem>
+                      <SelectItem value="Electrical">Electrical</SelectItem>
+                      <SelectItem value="Mechanical">Mechanical</SelectItem>
+                      <SelectItem value="Safety">Safety</SelectItem>
+                      <SelectItem value="Quality">Quality</SelectItem>
+                      <SelectItem value="Process">Process</SelectItem>
+                      <SelectItem value="Infrastructure">Infrastructure</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>                <div>
+                  <Label htmlFor="priority">Priority</Label>
+                  <Select value={formData.priority} onValueChange={(value) => setFormData(prev => ({ ...prev, priority: value }))}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Low">Low</SelectItem>
+                      <SelectItem value="Medium">Medium</SelectItem>
+                      <SelectItem value="High">High</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="timeline">Timeline *</Label>
+                  <Input
+                    id="timeline"
+                    value={formData.timeline}
+                    onChange={(e) => setFormData(prev => ({ ...prev, timeline: e.target.value }))}
+                    placeholder="e.g., 2 weeks, 3 months"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label>Start Date</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="w-full justify-start text-left font-normal">
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {formData.start_date ? format(formData.start_date, "PPP") : "Select date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={formData.start_date}
+                        onSelect={(date) => setFormData(prev => ({ ...prev, start_date: date }))}
+                        initialFocus
                       />
-                    </FormControl>
-                    <FormDescription>Explain why this project is important and what it aims to achieve</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="grid gap-6 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="system"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>System</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a system" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="PLC">PLC</SelectItem>
-                          <SelectItem value="SCADA">SCADA</SelectItem>
-                          <SelectItem value="Hydraulics">Hydraulics</SelectItem>
-                          <SelectItem value="Pneumatics">Pneumatics</SelectItem>
-                          <SelectItem value="Electrical">Electrical</SelectItem>
-                          <SelectItem value="Mechanical">Mechanical</SelectItem>
-                          <SelectItem value="Solar">Solar</SelectItem>
-                          <SelectItem value="Other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormDescription>The system or area involved in this project</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="status"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Status</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a status" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Planned">Planned</SelectItem>
-                          <SelectItem value="Ongoing">Ongoing</SelectItem>
-                          <SelectItem value="Complete">Complete</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormDescription>The current status of your project</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <FormField
-                control={form.control}
-                name="timeline"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Timeline</FormLabel>
-                    <FormControl>
-                      <Input placeholder="2 weeks" {...field} />
-                    </FormControl>
-                    <FormDescription>The expected duration or timeline for this project</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="contractor_involved"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                    <div className="space-y-0.5">
-                      <FormLabel className="text-base">Contractor Involvement</FormLabel>
-                      <FormDescription>Does this project involve external contractors?</FormDescription>
-                    </div>
-                    <FormControl>
-                      <Switch checked={field.value} onCheckedChange={field.onChange} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="results"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Results (Optional)</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Describe the results or current progress of the project"
-                        className="min-h-20"
-                        {...field}
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                
+                <div>
+                  <Label>Target Completion Date</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="w-full justify-start text-left font-normal">
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {formData.target_completion_date ? format(formData.target_completion_date, "PPP") : "Select date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={formData.target_completion_date}
+                        onSelect={(date) => setFormData(prev => ({ ...prev, target_completion_date: date }))}
+                        initialFocus
                       />
-                    </FormControl>
-                    <FormDescription>Document the outcomes or current progress of the project</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                    </PopoverContent>
+                  </Popover>
+                </div>
 
-              <div className="flex justify-end space-x-2">
+                <div>
+                  <Label htmlFor="progress">Progress (%)</Label>
+                  <Input
+                    id="progress"
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={formData.progress_percentage.toString()}
+                    onChange={(e) => setFormData(prev => ({ 
+                      ...prev, 
+                      progress_percentage: parseInt(e.target.value) || 0 
+                    }))}
+                    placeholder="0"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="budget_estimated">Estimated Budget</Label>
+                  <Input
+                    id="budget_estimated"
+                    type="number"
+                    step="0.01"
+                    value={formData.budget_estimated}
+                    onChange={(e) => setFormData(prev => ({ ...prev, budget_estimated: e.target.value }))}
+                    placeholder="0.00"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="budget_actual">Actual Budget</Label>
+                  <Input
+                    id="budget_actual"
+                    type="number"
+                    step="0.01"
+                    value={formData.budget_actual}
+                    onChange={(e) => setFormData(prev => ({ ...prev, budget_actual: e.target.value }))}
+                    placeholder="0.00"
+                  />
+                </div>
+
+                <div>
+                  <Label>Contractor Involved</Label>
+                  <Switch
+                    id="contractor"
+                    checked={formData.contractor_involved}
+                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, contractor_involved: checked }))}
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <Label>Tags</Label>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {formData.tags.map((tag) => (
+                      <Badge key={tag} variant="secondary" className="cursor-pointer" onClick={() => removeTag(tag)}>
+                        {tag} ×
+                      </Badge>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <Input
+                      value={newTag}
+                      onChange={(e) => setNewTag(e.target.value)}
+                      placeholder="Add tag"
+                      onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
+                    />
+                    <Button type="button" onClick={addTag} size="sm">Add</Button>
+                  </div>
+                </div>
+
+                <div className="md:col-span-2">
+                  <Label>Assigned Team Members</Label>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {formData.assigned_to.map((email) => (
+                      <Badge key={email} variant="outline" className="cursor-pointer" onClick={() => removeAssignee(email)}>
+                        {email} ×
+                      </Badge>
+                    ))}
+                  </div>
+                  <Button type="button" onClick={addAssignee} variant="outline" size="sm">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Team Member
+                  </Button>
+                </div>
+
+                <div className="md:col-span-2">
+                  <Label>Dependencies</Label>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {formData.dependencies.map((dep) => (
+                      <Badge key={dep} variant="secondary" className="cursor-pointer" onClick={() => removeDependency(dep)}>
+                        {dep} ×
+                      </Badge>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <Input
+                      value={newDependency}
+                      onChange={(e) => setNewDependency(e.target.value)}
+                      placeholder="Add dependency"
+                      onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addDependency())}
+                    />
+                    <Button type="button" onClick={addDependency} size="sm">Add</Button>
+                  </div>
+                </div>
+
+                <div className="md:col-span-2">
+                  <Label>Risks</Label>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {formData.risks.map((risk) => (
+                      <Badge key={risk} variant="secondary" className="cursor-pointer" onClick={() => removeRisk(risk)}>
+                        {risk} ×
+                      </Badge>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <Input
+                      value={newRisk}
+                      onChange={(e) => setNewRisk(e.target.value)}
+                      placeholder="Add risk"
+                      onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addRisk())}
+                    />
+                    <Button type="button" onClick={addRisk} size="sm">Add</Button>
+                  </div>
+                </div>
+
+                <div className="md:col-span-2">
+                  <Label>Success Criteria</Label>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {formData.success_criteria.map((criteria) => (
+                      <Badge key={criteria} variant="secondary" className="cursor-pointer" onClick={() => removeCriteria(criteria)}>
+                        {criteria} ×
+                      </Badge>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <Input
+                      value={newCriteria}
+                      onChange={(e) => setNewCriteria(e.target.value)}
+                      placeholder="Add success criteria"
+                      onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addCriteria())}
+                    />
+                    <Button type="button" onClick={addCriteria} size="sm">Add</Button>
+                  </div>
+                </div>
+              </div>      
+              
+              <div className="flex justify-end space-x-2 pt-4 pb-2">
                 <Button type="button" variant="outline" onClick={() => router.back()} disabled={isLoading}>
                   Cancel
                 </Button>
@@ -264,18 +475,18 @@ export default function NewProjectPage() {
                 </Button>
               </div>
             </form>
-          </Form>
+          </div>
         </CardContent>
       </Card>
 
       <ProjectProposalGenerator
-        title={form.watch("title") || ""}
-        objective={form.watch("objective") || ""}
-        system={form.watch("system") || ""}
+        title={formData.title || ""}
+        objective={formData.objective || ""}
+        system={formData.system || ""}
         onProposalGenerated={(proposal) => {
           // Optionally auto-fill some fields from the proposal
           if (proposal.proposal.timeline.totalDuration) {
-            form.setValue("timeline", proposal.proposal.timeline.totalDuration)
+            // Could set dates based on timeline if needed
           }
         }}
       />

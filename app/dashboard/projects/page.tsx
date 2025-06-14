@@ -1,26 +1,53 @@
 import { createServerClient } from "@/lib/supabase-server"
-import { ProjectsList } from "@/components/projects/projects-list"
-import { ProjectsHeader } from "@/components/projects/projects-header"
+import { ProjectsDashboard } from "@/components/projects/projects-dashboard"
 
 export default async function ProjectsPage() {
   const supabase = createServerClient()
+
+  if (!supabase) {
+    return <div>Error: Unable to connect to database</div>
+  }
 
   // Fetch user data
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Fetch all projects
+  if (!user) {
+    return <div>Error: User not authenticated</div>
+  }
+
+  // Fetch all projects with enhanced data
   const { data: projects } = await supabase
     .from("improvement_projects")
-    .select("*")
-    .eq("user_id", user?.id)
+    .select(`
+      *,
+      project_milestones (
+        id,
+        title,
+        description,
+        target_date,
+        completion_date,
+        status
+      ),
+      project_tasks (
+        id,
+        title,
+        status,
+        priority,
+        due_date,
+        completion_date
+      ),
+      project_updates (
+        id,
+        update_type,
+        title,
+        content,
+        created_at
+      )
+    `)
+    .eq("user_id", user.id)
     .order("created_at", { ascending: false })
 
-  return (
-    <div className="space-y-6">
-      <ProjectsHeader />
-      <ProjectsList projects={projects || []} />
-    </div>
-  )
+  return <ProjectsDashboard projects={projects || []} />
 }

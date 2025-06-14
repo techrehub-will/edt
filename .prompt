@@ -1,0 +1,67 @@
+Build a Next.js web app for engineering teams to track personal development and technical project contributions.
+
+Main Purpose:
+
+Let individual engineers log their learning goals, resolved technical issues, improvement projects, and tasks.
+
+Help teams or supervisors view summarized reports for performance reviews, audits, or mentorship.
+
+Target Users:
+
+Engineering graduates, trainees, and junior engineers working in manufacturing, utilities, automation, or energy.
+
+Pages/Views:
+
+Dashboard
+
+Overview of current goals, open tasks, and recent project entries
+
+Progress bar for development goals
+
+Development Goals
+
+Create, view, and update SMART goals
+
+Mark goals as “In Progress,” “Completed,” or “Stalled”
+
+Optional deadlines and progress notes
+
+Technical Project Log
+
+For each entry: date, title, plant/system affected, fault description, resolution steps, outcome
+
+Upload images or diagrams (optional)
+
+Tag by system (e.g., PLC, SCADA, hydraulics, solar)
+
+Mini Improvement Projects
+
+Log Kaizen-style initiatives or contractor-managed jobs
+
+Include scope, justification, status, completion date
+
+Reports/Export
+
+Download PDF or CSV summaries of goals, logs, and projects
+
+Filter by date, category, or status
+
+Tech Stack:
+
+Use Next.js (with TypeScript)
+
+Backend: lightweight API or Firebase / Supabase for auth and storage
+
+Optional: TailwindCSS for clean UI
+
+Must-Haves:
+
+Mobile-friendly layout
+
+Editable entries
+
+Dark/light mode toggle
+
+Basic auth or Google login
+
+The app should feel simple and engineer-focused—more like a journal than a corporate HR tool. Prioritize speed of data entry, offline usability (if PWA), and self-reflection.

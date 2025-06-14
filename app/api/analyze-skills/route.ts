@@ -5,6 +5,10 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = createServerClient()
 
+    if (!supabase) {
+      return NextResponse.json({ error: "Internal server error: Supabase client not initialized" }, { status: 500 })
+    }
+
     // Get the authenticated user
     const {
       data: { user },
@@ -114,7 +118,7 @@ Results: ${project.results || "N/A"}`,
     // Extract skills using Gemini
     const skillsPrompt = `
       Based on the following engineering development data, identify the technical skills demonstrated by the engineer. 
-      For each skill, determine the level (beginner, intermediate, advanced) and categorize it (e.g., PLC Programming, SCADA Systems, Electrical Engineering, etc.).
+      For each skill, determine the level (beginner, intermediate, advanced) and categorize it (e.g., PLC Programming, SCADA Systems, Electrical Engineering,Programming, Software Development ,etc etc.).
       
       GOALS:
       ${goalsText || "No goals data available."}
@@ -214,6 +218,11 @@ Results: ${project.results || "N/A"}`,
         logs_count: userData.logs.length,
         projects_count: userData.projects.length,
       },
+    }
+
+    if (!supabase) {
+      console.error("Supabase client is null")
+      return NextResponse.json({ error: "Internal server error: Supabase client not initialized" }, { status: 500 })
     }
 
     const { data: savedAnalysis, error: saveError } = await supabase

@@ -10,19 +10,83 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Target } from "lucide-react" // Import Target component
+import { useToast } from "@/hooks/use-toast"
+import { useSupabase } from "@/lib/supabase-provider"
 
 interface GoalsListProps {
   goals: any[]
+  onGoalDelete?: (goalId: string) => void
 }
 
-export function GoalsList({ goals: initialGoals }: GoalsListProps) {
+export function GoalsList({ goals: initialGoals, onGoalDelete }: GoalsListProps) {
   const [goals, setGoals] = useState(initialGoals)
   const [sortBy, setSortBy] = useState("created_at")
   const [sortOrder, setSortOrder] = useState("desc")
   const [filterStatus, setFilterStatus] = useState("all")
   const [filterCategory, setFilterCategory] = useState("all")
   const [searchQuery, setSearchQuery] = useState("")
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [goalToDelete, setGoalToDelete] = useState<any>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const { toast } = useToast()
+  const { supabase } = useSupabase()
+
+  // Handle delete goal
+  const handleDeleteGoal = async () => {
+    if (!goalToDelete) return
+    
+    setIsDeleting(true)
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "Please log in to delete goals.",
+          variant: "destructive",
+        })
+        return
+      }      const { error } = await supabase
+        .from("goals")
+        .delete()
+        .eq("id", goalToDelete.id)
+        .eq("user_id", user.id)
+
+      if (error) {
+        throw error
+      }
+
+      // Remove goal from local state
+      setGoals(prevGoals => prevGoals.filter(g => g.id !== goalToDelete.id))
+      
+      // Call parent callback if provided
+      if (onGoalDelete) {
+        onGoalDelete(goalToDelete.id)
+      }
+
+      toast({
+        title: "Goal deleted",
+        description: "The goal has been successfully deleted.",
+      })
+    } catch (error: any) {
+      toast({
+        title: "Error deleting goal",
+        description: error.message || "Failed to delete goal",
+        variant: "destructive",
+      })
+    } finally {
+      setIsDeleting(false)
+      setDeleteDialogOpen(false)
+      setGoalToDelete(null)
+    }
+  }
+
+  const openDeleteDialog = (goal: any) => {
+    setGoalToDelete(goal)
+    setDeleteDialogOpen(true)
+  }
 
   // Get unique categories
   const categories = Array.from(new Set(goals.map((goal) => goal.category)))
@@ -174,8 +238,10 @@ export function GoalsList({ goals: initialGoals }: GoalsListProps) {
                           <Pencil className="mr-2 h-4 w-4" />
                           Edit
                         </DropdownMenuItem>
-                      </Link>
-                      <DropdownMenuItem className="text-destructive focus:text-destructive">
+                      </Link>                      <DropdownMenuItem 
+                        className="text-destructive focus:text-destructive"
+                        onClick={() => openDeleteDialog(goal)}
+                      >
                         <Trash2 className="mr-2 h-4 w-4" />
                         Delete
                       </DropdownMenuItem>
@@ -200,9 +266,36 @@ export function GoalsList({ goals: initialGoals }: GoalsListProps) {
                 </div>
               </CardFooter>
             </Card>
-          ))}
-        </div>
+          ))}        </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Goal</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete "{goalToDelete?.title}"? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setDeleteDialogOpen(false)}
+              disabled={isDeleting}
+            >
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleDeleteGoal}
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

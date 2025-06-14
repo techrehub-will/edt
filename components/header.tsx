@@ -9,7 +9,6 @@ import { useEffect, useState } from "react"
 export default function Header() {
   const { supabase, isConnected } = useSupabase()
   const [user, setUser] = useState<any>(null)
-
   useEffect(() => {
     const getUser = async () => {
       if (isConnected) {
@@ -20,20 +19,10 @@ export default function Header() {
           setUser(user)
         } catch (error) {
           console.warn("Failed to get user:", error)
-          // Use demo user
-          setUser({
-            id: "demo-user-123",
-            email: "demo@engineer.com",
-            user_metadata: { full_name: "Demo Engineer" },
-          })
+          setUser(null)
         }
       } else {
-        // Use demo user
-        setUser({
-          id: "demo-user-123",
-          email: "demo@engineer.com",
-          user_metadata: { full_name: "Demo Engineer" },
-        })
+        setUser(null)
       }
     }
 
@@ -41,8 +30,7 @@ export default function Header() {
   }, [supabase, isConnected])
 
   return (
-    <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="flex h-14 items-center px-4 md:px-6">
+    <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">      <div className="flex h-14 items-center px-4 md:px-6 ml-16 md:ml-0">
         <div className="flex flex-1 items-center space-x-4">
           <SearchBar />
         </div>

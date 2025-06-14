@@ -1,13 +1,13 @@
 "use client"
 
 import { useState } from "react"
-import { Lightbulb, Target, Clock, CheckCircle, Loader2 } from "lucide-react"
+import { Lightbulb, Target, Clock, CheckCircle, Loader2, AlertCircle } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 interface SmartGoalSuggestions {
   suggestions: {
@@ -36,12 +36,15 @@ export function SmartGoalAssistant({ category, currentGoals = [], onApplySuggest
   const [description, setDescription] = useState("")
   const [suggestions, setSuggestions] = useState<SmartGoalSuggestions | null>(null)
   const [loading, setLoading] = useState(false)
-  const [mode, setMode] = useState<"ai" | "demo">("demo")
+  const [error, setError] = useState<string | null>(null)
 
   const generateSuggestions = async () => {
     if (!description.trim()) return
 
     setLoading(true)
+    setError(null)
+    setSuggestions(null)
+
     try {
       const response = await fetch("/api/ai/smart-goals", {
         method: "POST",
@@ -54,12 +57,19 @@ export function SmartGoalAssistant({ category, currentGoals = [], onApplySuggest
       })
 
       const result = await response.json()
-      if (result.success) {
-        setSuggestions(result.suggestions)
-        setMode(result.mode)
+      
+      if (!response.ok) {
+        throw new Error(result.details || result.error || "Failed to generate suggestions")
       }
+
+      if (!result.success) {
+        throw new Error("Failed to generate suggestions")
+      }
+
+      setSuggestions(result.suggestions)
     } catch (error) {
       console.error("Error generating suggestions:", error)
+      setError(error instanceof Error ? error.message : "Failed to generate suggestions")
     } finally {
       setLoading(false)
     }
@@ -80,7 +90,6 @@ export function SmartGoalAssistant({ category, currentGoals = [], onApplySuggest
         <CardTitle className="flex items-center gap-2">
           <Target className="h-5 w-5" />
           AI Goal Assistant
-          {mode === "demo" && <Badge variant="outline">Demo Mode</Badge>}
         </CardTitle>
         <CardDescription>Get AI-powered suggestions to create SMART goals</CardDescription>
       </CardHeader>
@@ -107,6 +116,14 @@ export function SmartGoalAssistant({ category, currentGoals = [], onApplySuggest
             )}
           </Button>
         </div>
+
+        {error && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
         {suggestions && (
           <Tabs defaultValue="main" className="w-full">

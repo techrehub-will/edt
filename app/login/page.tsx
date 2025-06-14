@@ -4,6 +4,10 @@ import { LoginForm } from "@/components/auth/login-form"
 
 export default async function LoginPage() {
   const supabase = createServerClient()
+  if (!supabase) {
+    // Handle the error or return an error message/component
+    return <div>Failed to initialize authentication client.</div>
+  }
   const {
     data: { session },
   } = await supabase.auth.getSession()

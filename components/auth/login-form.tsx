@@ -8,8 +8,10 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useToast } from "@/components/ui/use-toast"
 import { useSupabase } from "@/lib/supabase-provider"
+import { AlertCircle, Loader2 } from "lucide-react"
 
 export function LoginForm() {
   const router = useRouter()
@@ -18,10 +20,11 @@ export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-
+  const [error, setError] = useState<string | null>(null)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    setError(null) // Clear any previous errors
 
     try {
       const { error } = await supabase.auth.signInWithPassword({
@@ -30,6 +33,7 @@ export function LoginForm() {
       })
 
       if (error) {
+        setError(error.message)
         toast({
           title: "Error",
           description: error.message,
@@ -41,18 +45,20 @@ export function LoginForm() {
       router.push("/dashboard")
       router.refresh()
     } catch (error: any) {
+      const errorMessage = error.message || "Something went wrong"
+      setError(errorMessage)
       toast({
         title: "Error",
-        description: error.message || "Something went wrong",
+        description: errorMessage,
         variant: "destructive",
       })
     } finally {
       setIsLoading(false)
     }
   }
-
   const handleGoogleLogin = async () => {
     setIsLoading(true)
+    setError(null) // Clear any previous errors
 
     try {
       const { error } = await supabase.auth.signInWithOAuth({
@@ -63,6 +69,7 @@ export function LoginForm() {
       })
 
       if (error) {
+        setError(error.message)
         toast({
           title: "Error",
           description: error.message,
@@ -70,27 +77,37 @@ export function LoginForm() {
         })
       }
     } catch (error: any) {
+      const errorMessage = error.message || "Something went wrong"
+      setError(errorMessage)
       toast({
         title: "Error",
-        description: error.message || "Something went wrong",
+        description: errorMessage,
         variant: "destructive",
       })
     } finally {
       setIsLoading(false)
     }
   }
-
   return (
     <div className="space-y-6">
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <Input
+          <Label htmlFor="email">Email</Label>          <Input
             id="email"
             type="email"
             placeholder="name@example.com"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value)
+              if (error) setError(null) // Clear error when user types
+            }}
             required
           />
         </div>
@@ -100,16 +117,18 @@ export function LoginForm() {
             <Link href="/forgot-password" className="text-sm text-primary hover:underline">
               Forgot password?
             </Link>
-          </div>
-          <Input
+          </div>          <Input
             id="password"
             type="password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {
+              setPassword(e.target.value)
+              if (error) setError(null) // Clear error when user types
+            }}
             required
           />
-        </div>
-        <Button type="submit" className="w-full" disabled={isLoading}>
+        </div>        <Button type="submit" className="w-full" disabled={isLoading}>
+          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {isLoading ? "Signing in..." : "Sign In"}
         </Button>
       </form>
@@ -120,9 +139,9 @@ export function LoginForm() {
         <div className="relative flex justify-center text-xs uppercase">
           <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
         </div>
-      </div>
-      <Button variant="outline" type="button" className="w-full" onClick={handleGoogleLogin} disabled={isLoading}>
-        Google
+      </div>      <Button variant="outline" type="button" className="w-full" onClick={handleGoogleLogin} disabled={isLoading}>
+        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        {isLoading ? "Connecting..." : "Continue with Google"}
       </Button>
       <div className="text-center text-sm">
         Don't have an account?{" "}

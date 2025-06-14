@@ -1,11 +1,12 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Tags, Sparkles, Plus, X } from "lucide-react"
+import { Tags, Sparkles, Plus, X, AlertCircle } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 interface TagSuggestions {
   suggestedTags: string[]
@@ -40,7 +41,7 @@ export function SmartTagAssistant({
 }: SmartTagAssistantProps) {
   const [suggestions, setSuggestions] = useState<TagSuggestions | null>(null)
   const [loading, setLoading] = useState(false)
-  const [mode, setMode] = useState<"ai" | "demo">("demo")
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (title && description && system) {
@@ -50,6 +51,9 @@ export function SmartTagAssistant({
 
   const generateTagSuggestions = async () => {
     setLoading(true)
+    setError(null)
+    setSuggestions(null)
+
     try {
       const response = await fetch("/api/ai/smart-tags", {
         method: "POST",
@@ -64,25 +68,19 @@ export function SmartTagAssistant({
       })
 
       const result = await response.json()
-      if (result.success) {
-        setSuggestions(result.tagSuggestions)
-        setMode(result.mode)
+
+      if (!response.ok) {
+        throw new Error(result.details || result.error || "Failed to generate suggestions")
       }
+
+      if (!result.success || !result.tagSuggestions) {
+        throw new Error("Failed to generate tag suggestions")
+      }
+
+      setSuggestions(result.tagSuggestions)
     } catch (error) {
       console.error("Error generating tag suggestions:", error)
-      // Fallback to demo suggestions
-      setSuggestions({
-        suggestedTags: ["troubleshooting", "maintenance", "system-failure", "documentation"],
-        categories: {
-          technical: ["troubleshooting", "diagnostics", "repair"],
-          process: ["maintenance", "inspection", "testing"],
-          equipment: ["system-failure", "component-replacement"],
-          skills: ["problem-solving", "documentation"],
-        },
-        priority: ["troubleshooting", "maintenance"],
-        reasoning: "Based on the technical content, these tags will help categorize and find this log entry.",
-      })
-      setMode("demo")
+      setError(error instanceof Error ? error.message : "Failed to generate suggestions")
     } finally {
       setLoading(false)
     }
@@ -105,7 +103,7 @@ export function SmartTagAssistant({
     }
   }
 
-  if (!suggestions && !loading) {
+  if (!suggestions && !loading && !error) {
     return null
   }
 
@@ -116,11 +114,18 @@ export function SmartTagAssistant({
           <CardTitle className="flex items-center gap-2">
             <Tags className="h-5 w-5" />
             AI Tag Assistant
-            {mode === "demo" && <Badge variant="outline">Demo Mode</Badge>}
           </CardTitle>
           <CardDescription>AI-powered tag suggestions based on your technical content</CardDescription>
         </CardHeader>
         <CardContent>
+          {error && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
           {loading ? (
             <div className="text-center py-4">
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto mb-2"></div>
@@ -134,12 +139,11 @@ export function SmartTagAssistant({
                 <div className="flex flex-wrap gap-2">
                   {currentTags.map((tag) => (
                     <Badge key={tag} variant="default" className="flex items-center gap-1">
-                      {tag}
-                      <Button
+                      {tag}                    <Button
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="h-4 w-4 p-0 hover:bg-transparent hover:text-destructive"
+                        className="h-4 w-4 p-0 hover:bg-transparent hover:text-destructive focus-visible:ring-0"
                         onClick={() => removeTag(tag)}
                       >
                         <X className="h-3 w-3" />
@@ -172,10 +176,9 @@ export function SmartTagAssistant({
                       const isPriority = suggestions.priority.includes(tag)
                       return (
                         <Badge
-                          key={tag}
-                          variant={isAdded ? "default" : "outline"}
+                          key={tag}                          variant={isAdded ? "default" : isPriority ? "secondary" : "outline"}
                           className={`cursor-pointer transition-colors ${
-                            isPriority ? "border-yellow-500 bg-yellow-50" : ""
+                            isPriority ? "border-primary/50" : ""
                           }`}
                           onClick={() => (isAdded ? removeTag(tag) : addTag(tag))}
                         >
@@ -186,10 +189,9 @@ export function SmartTagAssistant({
                       )
                     })}
                   </div>
-
-                  <div className="text-xs text-muted-foreground bg-muted p-2 rounded">
-                    <strong>AI Reasoning:</strong> {suggestions.reasoning}
-                  </div>
+          <div className="text-xs text-muted-foreground bg-muted/50 p-2 rounded border">
+            <strong>AI Reasoning:</strong> {suggestions.reasoning}
+          </div>
                 </TabsContent>
 
                 <TabsContent value="categories" className="space-y-4">
@@ -199,16 +201,15 @@ export function SmartTagAssistant({
                       <div className="flex flex-wrap gap-2">
                         {tags.map((tag) => {
                           const isAdded = currentTags.includes(tag)
-                          return (
-                            <Badge
-                              key={tag}
-                              variant={isAdded ? "default" : "outline"}
-                              className="cursor-pointer transition-colors"
-                              onClick={() => (isAdded ? removeTag(tag) : addTag(tag))}
-                            >
-                              {tag}
-                              {isAdded && <X className="h-3 w-3 ml-1" />}
-                            </Badge>
+                          return (                        <Badge
+                          key={tag}
+                          variant={isAdded ? "default" : "outline"}
+                          className="cursor-pointer transition-colors hover:bg-muted/60"
+                          onClick={() => (isAdded ? removeTag(tag) : addTag(tag))}
+                        >
+                          {tag}
+                          {isAdded && <X className="h-3 w-3 ml-1" />}
+                        </Badge>
                           )
                         })}
                       </div>
