@@ -148,6 +148,7 @@ export default function RootLayout({
         <meta name="format-detection" content="telephone=no" />
         <meta name="referrer" content="strict-origin-when-cross-origin" />
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />        <meta name="HandheldFriendly" content="true" />
+        <meta name="msvalidate.01" content="CEDC65F3D2DA389E6CDCCF3BEA1898BE" />
         {/* Favicon and Icons */}
         <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16x16.png" />
