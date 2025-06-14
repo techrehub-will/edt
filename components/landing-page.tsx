@@ -2,6 +2,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import SEOStructuredData from "@/components/seo-structured-data"
 import { 
   Target, 
   FileText, 
@@ -21,7 +22,9 @@ import {
 
 export default function LandingPage() {
   return (
-    <div className="flex min-h-screen flex-col">
+    <>
+      <SEOStructuredData type="landing" />
+      <div className="flex min-h-screen flex-col">
       <header className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-2">
@@ -41,13 +44,22 @@ export default function LandingPage() {
             </Link>
           </div>
         </div>
-      </header>
-
-      <main className="flex-1">
+      </header>      <main className="flex-1">
         {/* Hero Section */}
         <section className="relative overflow-hidden bg-gradient-to-br from-primary/5 via-background to-secondary/5">
           <div className="container py-12 md:py-24 lg:py-32">
             <div className="mx-auto flex max-w-[64rem] flex-col items-center gap-6 text-center">
+              <div className="space-y-4">
+                <Badge variant="outline" className="px-3 py-1">
+                  🚀 Accelerate Your Engineering Career
+                </Badge>
+                <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl">
+                  Track Your <span className="text-primary">Technical Growth</span> & Career Progress
+                </h1>
+                <p className="mx-auto max-w-[42rem] leading-normal text-muted-foreground sm:text-xl sm:leading-8">
+                  Accelerate your engineering career with comprehensive project tracking, goal management, and professional development analytics. Join thousands of engineers advancing their careers with EDT.
+                </p>
+              </div>
               <Badge variant="outline" className="mb-4">
                 <Smartphone className="mr-2 h-3 w-3" />
                 Now Available as PWA - Install on Your Device!
@@ -464,13 +476,13 @@ export default function LandingPage() {
             <div className="rounded-lg bg-primary p-1.5">
               <Target className="h-4 w-4 text-primary-foreground" />
             </div>
-            <span className="font-medium">Engineering Development Tracker</span>
-          </div>
+            <span className="font-medium">Engineering Development Tracker</span>          </div>
           <p className="text-sm text-muted-foreground">
             &copy; {new Date().getFullYear()} EDT. Built for engineering excellence.
           </p>
         </div>
       </footer>
     </div>
+    </>
   )
 }
