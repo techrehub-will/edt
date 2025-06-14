@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { BarChart3, FileText, Home, LightbulbIcon, Target, Zap, Brain, Menu, X, User, Settings } from "lucide-react"
+import { BarChart3, FileText, Home, LightbulbIcon, Target, Zap, Brain, Menu, X, User, Settings, MessageCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useState } from "react"
 
@@ -40,12 +40,17 @@ export default function Sidebar() {
       icon: BarChart3,
       href: "/dashboard/analytics",
       active: pathname === "/dashboard/analytics",
-    },
-    {
+    },    {
       label: "AI Insights",
       icon: Brain,
       href: "/dashboard/ai-insights",
       active: pathname === "/dashboard/ai-insights",
+    },
+    {
+      label: "AI Copilot",
+      icon: MessageCircle,
+      href: "/dashboard/ai-copilot",
+      active: pathname === "/dashboard/ai-copilot",
     },
     // {
     //   label: "Integrations",

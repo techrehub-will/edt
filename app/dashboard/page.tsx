@@ -5,7 +5,11 @@ import { RecentActivity } from "@/components/dashboard/recent-activity"
 import { GoalProgress } from "@/components/dashboard/goal-progress"
 
 export default async function DashboardPage() {
-  const supabase = createServerClient()
+  const supabase = await createServerClient()
+
+  if (!supabase) {
+    return <div>Failed to initialize database connection.</div>
+  }
 
   // Fetch user data
   const {

@@ -16,6 +16,7 @@ import * as z from "zod"
 import { FileUpload } from "@/components/ui/file-upload"
 import { v4 as uuidv4 } from "uuid"
 import { SmartTagAssistant } from "@/components/ai/smart-tag-assistant"
+import { AIReportGenerator } from "@/components/ai/ai-report-generator"
 
 const formSchema = z.object({
   title: z.string().min(2, {
@@ -112,9 +113,23 @@ export default function NewLogPage() {
 
       progress += increment
       setUploadProgress(Math.min(Math.round(progress), 100))
-    }
+    }    return uploadedUrls
+  }
 
-    return uploadedUrls
+  const handleAIReportGenerated = (report: any) => {
+    // Fill form fields with AI-generated content
+    form.setValue("title", report.title)
+    form.setValue("system", report.system)
+    form.setValue("description", report.description)
+    form.setValue("resolution", report.resolution)
+    form.setValue("outcome", report.outcome)
+    
+    // Add suggested tags if any
+    if (report.suggestedTags && Array.isArray(report.suggestedTags)) {
+      const newTags = [...tags, ...report.suggestedTags.filter((tag: string) => !tags.includes(tag))]
+      setTags(newTags)
+      form.setValue("tags", newTags)
+    }
   }
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -180,9 +195,15 @@ export default function NewLogPage() {
       setUploadProgress(0)
     }
   }
-
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-2xl space-y-6">
+      {/* AI Report Generator */}
+      <AIReportGenerator 
+        onReportGenerated={handleAIReportGenerated}
+        isLoading={isLoading}
+      />
+
+      {/* Manual Form */}
       <Card className="border-t-4 border-t-emerald-500">
         <CardHeader>
           <CardTitle>Create Technical Log</CardTitle>
@@ -217,8 +238,17 @@ export default function NewLogPage() {
                         <SelectTrigger>
                           <SelectValue placeholder="Select a system" />
                         </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
+                      </FormControl>                      <SelectContent>
+                        <SelectItem value="Web Application">Web Application</SelectItem>
+                        <SelectItem value="Mobile App">Mobile App</SelectItem>
+                        <SelectItem value="API">API</SelectItem>
+                        <SelectItem value="Database">Database</SelectItem>
+                        <SelectItem value="Infrastructure">Infrastructure</SelectItem>
+                        <SelectItem value="Security">Security</SelectItem>
+                        <SelectItem value="DevOps">DevOps</SelectItem>
+                        <SelectItem value="Frontend">Frontend</SelectItem>
+                        <SelectItem value="Backend">Backend</SelectItem>
+                        <SelectItem value="Cloud Services">Cloud Services</SelectItem>
                         <SelectItem value="PLC">PLC</SelectItem>
                         <SelectItem value="SCADA">SCADA</SelectItem>
                         <SelectItem value="Hydraulics">Hydraulics</SelectItem>

@@ -41,7 +41,12 @@ export const metadata: Metadata = {
 }
 
 export default async function Home() {
-  const supabase = createServerClient()
+  const supabase = await createServerClient()
+  
+  if (!supabase) {
+    return <LandingPage />
+  }
+  
   const {
     data: { session },
   } = await supabase.auth.getSession()

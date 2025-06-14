@@ -10,9 +10,8 @@ export default async function DashboardLayout({
   children: React.ReactNode
 }) {
   let session = null
-
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
 
     if (supabase) {
       const { data } = await supabase.auth.getSession()

@@ -30,7 +30,12 @@ export const metadata: Metadata = {
 }
 
 export default async function RegisterPage() {
-  const supabase = createServerClient()
+  const supabase = await createServerClient()
+  
+  if (!supabase) {
+    return <div>Failed to initialize authentication client.</div>
+  }
+  
   const {
     data: { session },
   } = await supabase.auth.getSession()

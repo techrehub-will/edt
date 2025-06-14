@@ -3,7 +3,11 @@ import { GoalsList } from "@/components/goals/goals-list"
 import { GoalsHeader } from "@/components/goals/goals-header"
 
 export default async function GoalsPage() {
-  const supabase = createServerClient()
+  const supabase = await createServerClient()
+
+  if (!supabase) {
+    return <div>Failed to initialize database connection.</div>
+  }
 
   // Fetch user data
   const {

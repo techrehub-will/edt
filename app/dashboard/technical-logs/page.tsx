@@ -3,7 +3,11 @@ import { LogsList } from "@/components/logs/logs-list"
 import { LogsHeader } from "@/components/logs/logs-header"
 
 export default async function LogsPage() {
-  const supabase = createServerClient()
+  const supabase = await createServerClient()
+
+  if (!supabase) {
+    return <div>Failed to initialize database connection.</div>
+  }
 
   // Fetch user data
   const {

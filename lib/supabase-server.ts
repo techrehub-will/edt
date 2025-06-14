@@ -2,9 +2,12 @@ import { createServerComponentClient } from "@supabase/auth-helpers-nextjs"
 import { cookies } from "next/headers"
 import type { Database } from "@/lib/database.types"
 
-export const createServerClient = () => {
+export const createServerClient = async () => {
   try {
-    return createServerComponentClient<Database>({ cookies })
+    const cookieStore = cookies()
+    return createServerComponentClient<Database>({ 
+      cookies: () => cookieStore 
+    })
   } catch (error) {
     console.warn("Server Supabase client creation failed:", error)
     // Return a mock client for demo purposes

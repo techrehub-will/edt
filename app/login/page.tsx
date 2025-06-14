@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 }
 
 export default async function LoginPage() {
-  const supabase = createServerClient()
+  const supabase = await createServerClient()
   if (!supabase) {
     // Handle the error or return an error message/component
     return <div>Failed to initialize authentication client.</div>

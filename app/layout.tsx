@@ -132,7 +132,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {  return (
-    <html lang="en" suppressHydrationWarning>      <head>
+    <html lang="en" suppressHydrationWarning>
+      <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes" />
         <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
         <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
@@ -146,21 +147,15 @@ export default function RootLayout({
         <meta name="apple-touch-fullscreen" content="yes" />
         <meta name="format-detection" content="telephone=no" />
         <meta name="referrer" content="strict-origin-when-cross-origin" />
-        <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
-        <meta name="HandheldFriendly" content="true" />
-        
+        <meta httpEquiv="X-UA-Compatible" content="IE=edge" />        <meta name="HandheldFriendly" content="true" />
         {/* Favicon and Icons */}
         <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16x16.png" />
-        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
-        <link rel="mask-icon" href="/icons/icon-base.svg" color="#000000" />
-        
+        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />        <link rel="mask-icon" href="/icons/icon-base.svg" color="#000000" />
         {/* Preconnect for performance */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="//fonts.googleapis.com" />
-        <link rel="dns-prefetch" href="//fonts.gstatic.com" />
-        
+        <link rel="dns-prefetch" href="//fonts.googleapis.com" />        <link rel="dns-prefetch" href="//fonts.gstatic.com" />
         {/* Structured Data */}
         <script 
           type="application/ld+json"
@@ -190,12 +185,12 @@ export default function RootLayout({
                 "@type": "Offer",
                 "price": "0",
                 "priceCurrency": "USD"
-              }
-            })
+              }            })
           }}
         />
       </head>
-      <body className={inter.className}>        <SupabaseProvider>
+      <body className={inter.className} suppressHydrationWarning>
+        <SupabaseProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <PWALifecycle />
             {children}

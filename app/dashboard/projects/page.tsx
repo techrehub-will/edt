@@ -2,7 +2,7 @@ import { createServerClient } from "@/lib/supabase-server"
 import { ProjectsDashboard } from "@/components/projects/projects-dashboard"
 
 export default async function ProjectsPage() {
-  const supabase = createServerClient()
+  const supabase = await createServerClient()
 
   if (!supabase) {
     return <div>Error: Unable to connect to database</div>
