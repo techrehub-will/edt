@@ -1,16 +1,15 @@
-{
-  "name": "Engineering Development Tracker - Track Your Technical Growth",
+{  "name": "Engineering Development Tracker - Track Your Technical Growth",
   "short_name": "EDT",
   "description": "Accelerate your engineering career with comprehensive project tracking, goal management, and professional development analytics. Track technical projects, set SMART goals, and measure career progress.",
   "start_url": "/",
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#000000",
-  "orientation": "portrait-primary",
-  "categories": ["productivity", "business", "education", "developer-tools"],
-  "lang": "en",
   "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",  "lang": "en",
   "id": "engineering-development-tracker",
+  "prefer_related_applications": false,
+  "categories": ["productivity", "business", "education"],
   "edge_side_panel": {
     "preferred_width": 400
   },

@@ -23,7 +23,6 @@ export default function PWAInstallPrompt() {
   const [showInstallPrompt, setShowInstallPrompt] = useState(false)
   const [isIOS, setIsIOS] = useState(false)
   const [isStandalone, setIsStandalone] = useState(false)
-
   useEffect(() => {
     // Check if device is iOS
     const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
@@ -34,23 +33,40 @@ export default function PWAInstallPrompt() {
                       (window.navigator as any).standalone === true
     setIsStandalone(standalone)
 
+    // Debug logging
+    console.log('PWA Debug:', { iOS, standalone, userAgent: navigator.userAgent })
+
     // Listen for the beforeinstallprompt event
     const handleBeforeInstallPrompt = (e: BeforeInstallPromptEvent) => {
+      console.log('beforeinstallprompt event fired:', e)
       // Prevent the mini-infobar from appearing on mobile
       e.preventDefault()
       // Save the event so it can be triggered later
-      setDeferredPrompt(e)      // Show install prompt after a delay
+      setDeferredPrompt(e)
+      
+      // Show install prompt immediately for testing
       setTimeout(() => {
         if (!standalone && typeof window !== 'undefined') {
           // Check if user hasn't dismissed it in this session
           if (sessionStorage.getItem('pwa-install-dismissed') !== 'true') {
+            console.log('Showing install prompt')
             setShowInstallPrompt(true)
           }
         }
-      }, 3000)
+      }, 1000) // Reduced delay for testing
     }
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+
+    // Force show prompt for testing (remove in production)
+    if (!standalone && !iOS) {
+      setTimeout(() => {
+        if (sessionStorage.getItem('pwa-install-dismissed') !== 'true') {
+          console.log('Force showing install prompt for testing')
+          setShowInstallPrompt(true)
+        }
+      }, 5000)
+    }
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
@@ -83,13 +99,15 @@ export default function PWAInstallPrompt() {
       sessionStorage.setItem('pwa-install-dismissed', 'true')
     }
   }
+  // Don't show if already installed or dismissed
+  if (typeof window === 'undefined' || isStandalone) {
+    return null
+  }
 
-  // Don't show if already installed, dismissed, or no prompt available
-  if (typeof window === 'undefined' ||
-      isStandalone || 
-      (typeof window !== 'undefined' && sessionStorage.getItem('pwa-install-dismissed') === 'true') || 
-      (!deferredPrompt && !isIOS) || 
-      !showInstallPrompt) {
+  // Show prompt if we have conditions met OR if it's for testing
+  const shouldShow = showInstallPrompt && (deferredPrompt || isIOS || sessionStorage.getItem('pwa-install-dismissed') !== 'true')
+
+  if (!shouldShow) {
     return null
   }
 
