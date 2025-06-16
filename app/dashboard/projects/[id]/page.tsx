@@ -41,6 +41,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Calendar as CalendarComponent } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { ProjectAttachments } from "@/components/projects/project-attachments"
+import { ProjectUpdates } from "@/components/projects/project-updates"
 
 interface Project {
   id: string
@@ -94,8 +95,11 @@ interface Task {
 
 interface ProjectUpdate {
   id: string
-  content: string
+  project_id: string
+  user_id: string
   update_type: string
+  title?: string
+  content: string
   attachments: string[]
   created_at: string
 }
@@ -1640,52 +1644,12 @@ export default function ProjectViewerPage() {  const params = useParams()
               )}
             </CardContent>
           </Card>
-        </TabsContent>
-
-        <TabsContent value="updates" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Project Updates</CardTitle>
-              <CardDescription>
-                Timeline of project updates and notes
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {updates.length === 0 ? (
-                <div className="text-center py-8">
-                  <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-muted-foreground mb-2">No Updates</h3>
-                  <p className="text-muted-foreground">No updates have been posted for this project yet.</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {updates.map((update) => (
-                    <div key={update.id} className="border rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <Badge variant="outline">{update.update_type}</Badge>
-                        <span className="text-sm text-muted-foreground">
-                          {format(new Date(update.created_at), "MMM dd, yyyy 'at' HH:mm")}
-                        </span>
-                      </div>
-                      <p className="text-muted-foreground">{update.content}</p>
-                      {update.attachments && update.attachments.length > 0 && (
-                        <div className="mt-3">
-                          <p className="text-sm font-medium mb-2">Attachments:</p>
-                          <div className="flex flex-wrap gap-2">
-                            {update.attachments.map((attachment, index) => (
-                              <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                                <FileText className="h-3 w-3" />
-                                {attachment}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}            </CardContent>
-          </Card>
+        </TabsContent>        <TabsContent value="updates" className="space-y-4">
+          <ProjectUpdates
+            projectId={project.id}
+            updates={updates}
+            onUpdatesChange={setUpdates}
+          />
         </TabsContent>
 
         <TabsContent value="attachments" className="space-y-4">

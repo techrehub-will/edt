@@ -26,6 +26,7 @@ import {
 } from "lucide-react"
 import { format } from "date-fns"
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+import { useToast } from "@/hooks/use-toast"
 import { ProjectAttachments } from "./project-attachments"
 
 interface ProjectDetailsProps {
