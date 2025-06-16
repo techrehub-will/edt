@@ -63,19 +63,18 @@ export default function Sidebar() {
       icon: FileText,
       href: "/dashboard/reports",
       active: pathname === "/dashboard/reports",
-    },
-    {
+    },    {
       label: "Profile",
       icon: User,
       href: "/dashboard/profile",
       active: pathname === "/dashboard/profile",
     },
-    // {
-    //   label: "Settings",
-    //   icon: Settings,
-    //   href: "/dashboard/settings",
-    //   active: pathname === "/dashboard/settings",
-    // },
+    {
+      label: "Settings",
+      icon: Settings,
+      href: "/dashboard/settings",
+      active: pathname === "/dashboard/settings",
+    },
   ]
 
   const toggleMobileMenu = () => {

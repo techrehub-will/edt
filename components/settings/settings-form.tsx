@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useToast } from "@/components/ui/use-toast"
+import { useToast } from "@/hooks/use-toast"
 import { useSupabase } from "@/lib/supabase-provider"
 import { Settings, Bell, Moon, Globe, Save, Loader2 } from "lucide-react"
 
@@ -24,14 +24,14 @@ interface UserSettings {
 export function SettingsForm() {
   const { supabase, isConnected } = useSupabase()
   const { toast } = useToast()
-  
-  const [loading, setLoading] = useState(true)
+    const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  
   const [settings, setSettings] = useState<UserSettings>({
     notifications_enabled: true,
     email_notifications: true,
-    dark_mode: false,
-    timezone: "America/Los_Angeles",
+    dark_mode: true,
+    timezone: "Africa/Harare",
     language: "en",
     weekly_digest: true,
     ai_insights_enabled: true,
@@ -40,18 +40,24 @@ export function SettingsForm() {
   useEffect(() => {
     loadSettings()
   }, [])
+
+  // Apply dark mode immediately when changed
+  useEffect(() => {
+    if (settings.dark_mode) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+  }, [settings.dark_mode])
+
   const loadSettings = async () => {
     try {
       if (!isConnected) {
-        // Redirect to login if not authenticated
         setLoading(false)
         return
       }
 
-      const {
-        data: { user },
-        error: authError,
-      } = await supabase.auth.getUser()
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
 
       if (authError || !user) {
         setLoading(false)
@@ -78,17 +84,44 @@ export function SettingsForm() {
       setLoading(false)
     }
   }
-  const handleSave = async () => {
-    setSaving(true)
+  // Request notification permissions when enabled
+  useEffect(() => {
+    if (settings.notifications_enabled && typeof window !== 'undefined' && 'Notification' in window) {
+      if (Notification.permission === 'default') {
+        Notification.requestPermission().then(permission => {
+          if (permission !== 'granted') {
+            setSettings(prev => ({ ...prev, notifications_enabled: false }))
+            toast({
+              title: "Notifications Blocked",
+              description: "Please enable notifications in your browser settings.",
+              variant: "destructive"
+            })
+          }
+        })
+      } else if (Notification.permission === 'denied') {
+        setSettings(prev => ({ ...prev, notifications_enabled: false }))
+        toast({
+          title: "Notifications Blocked", 
+          description: "Notifications are blocked. Please enable them in your browser settings.",
+          variant: "destructive"
+        })
+      }
+    }
+  }, [settings.notifications_enabled, toast])
+
+  const handleSave = async (silent = false) => {
+    if (!silent) setSaving(true)
 
     try {
       if (!isConnected) {
-        toast({
-          title: "Authentication Required",
-          description: "Please sign in to save your settings.",
-          variant: "destructive",
-        })
-        setSaving(false)
+        if (!silent) {
+          toast({
+            title: "Authentication Required",
+            description: "Please sign in to save your settings.",
+            variant: "destructive",
+          })
+        }
+        if (!silent) setSaving(false)
         return
       }
 
@@ -117,19 +150,80 @@ export function SettingsForm() {
         throw error
       }
 
-      toast({
-        title: "Success",
-        description: "Settings saved successfully.",
-      })
+      if (!silent) {
+        toast({
+          title: "Success",
+          description: "Settings saved successfully.",
+        })
+      }
     } catch (error) {
       console.error("Error saving settings:", error)
-      toast({
-        title: "Error",
-        description: "Failed to save settings.",
-        variant: "destructive",
-      })
+      if (!silent) {
+        toast({
+          title: "Error",
+          description: "Failed to save settings.",
+          variant: "destructive",
+        })
+      }
     } finally {
-      setSaving(false)
+      if (!silent) setSaving(false)
+    }
+  }
+
+  const handleSettingChange = (key: keyof UserSettings, value: any) => {
+    setSettings(prev => ({ ...prev, [key]: value }))
+    
+    // Show immediate feedback for certain settings
+    if (key === 'dark_mode') {
+      toast({
+        title: value ? "Dark Mode Enabled" : "Light Mode Enabled",
+        description: "Theme has been applied immediately.",
+      })
+    }
+    
+    if (key === 'notifications_enabled' && value) {
+      toast({
+        title: "Notifications Enabled",
+        description: "You'll now receive browser notifications.",
+      })
+    }
+
+    if (key === 'ai_insights_enabled') {
+      toast({
+        title: value ? "AI Insights Enabled" : "AI Insights Disabled",
+        description: value 
+          ? "AI-powered analysis and recommendations are now active."
+          : "AI features have been disabled.",
+      })
+    }
+  }
+
+  const testNotification = () => {
+    if (!settings.notifications_enabled) {
+      toast({
+        title: "Notifications Disabled",
+        description: "Please enable notifications first.",
+        variant: "destructive"
+      })
+      return
+    }
+
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+      new Notification('EDT - Test Notification', {
+        body: 'Your notifications are working correctly!',
+        icon: '/icons/icon-192x192.png',
+        badge: '/icons/icon-192x192.png'
+      })
+      toast({
+        title: "Test Notification Sent",
+        description: "Check if you received the notification.",
+      })
+    } else {
+      toast({
+        title: "Notifications Not Available",
+        description: "Notifications are not supported or not permitted.",
+        variant: "destructive"
+      })
     }
   }
 
@@ -166,13 +260,10 @@ export function SettingsForm() {
               <p className="text-sm text-muted-foreground">
                 Receive push notifications in your browser.
               </p>
-            </div>
-            <Switch
+            </div>            <Switch
               id="notifications_enabled"
               checked={settings.notifications_enabled}
-              onCheckedChange={(checked) =>
-                setSettings({ ...settings, notifications_enabled: checked })
-              }
+              onCheckedChange={(checked) => handleSettingChange('notifications_enabled', checked)}
             />
           </div>
 
@@ -182,31 +273,35 @@ export function SettingsForm() {
               <p className="text-sm text-muted-foreground">
                 Receive email notifications for important updates.
               </p>
-            </div>
-            <Switch
+            </div>            <Switch
               id="email_notifications"
               checked={settings.email_notifications}
-              onCheckedChange={(checked) =>
-                setSettings({ ...settings, email_notifications: checked })
-              }
+              onCheckedChange={(checked) => handleSettingChange('email_notifications', checked)}
             />
-          </div>
-
-          <div className="flex items-center justify-between">
+          </div>          <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label htmlFor="weekly_digest">Weekly Digest</Label>
               <p className="text-sm text-muted-foreground">
                 Receive a weekly summary of your progress and insights.
               </p>
-            </div>
-            <Switch
+            </div>            <Switch
               id="weekly_digest"
               checked={settings.weekly_digest}
-              onCheckedChange={(checked) =>
-                setSettings({ ...settings, weekly_digest: checked })
-              }
+              onCheckedChange={(checked) => handleSettingChange('weekly_digest', checked)}
             />
           </div>
+
+          {/* {settings.notifications_enabled && (
+            <div className="pt-4 border-t">
+              <Button 
+                variant="outline" 
+                onClick={testNotification}
+                className="w-full"
+              >
+                Test Notifications
+              </Button>
+            </div>
+          )} */}
         </CardContent>
       </Card>
 
@@ -228,15 +323,20 @@ export function SettingsForm() {
               <p className="text-sm text-muted-foreground">
                 Enable AI-powered analysis and recommendations.
               </p>
-            </div>
-            <Switch
+            </div>            <Switch
               id="ai_insights_enabled"
               checked={settings.ai_insights_enabled}
-              onCheckedChange={(checked) =>
-                setSettings({ ...settings, ai_insights_enabled: checked })
-              }
+              onCheckedChange={(checked) => handleSettingChange('ai_insights_enabled', checked)}
             />
-          </div>
+          </div>          {settings.ai_insights_enabled && (
+            <div className="pt-4 border-t">
+              <div className="p-3 bg-muted rounded-lg">
+                <p className="text-sm text-muted-foreground">
+                  ✨ AI Insights Active: The system will now analyze your projects and provide personalized recommendations for improving your development workflow.
+                </p>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -258,67 +358,71 @@ export function SettingsForm() {
               <p className="text-sm text-muted-foreground">
                 Switch between light and dark themes.
               </p>
-            </div>
-            <Switch
+            </div>            <Switch
               id="dark_mode"
               checked={settings.dark_mode}
-              onCheckedChange={(checked) =>
-                setSettings({ ...settings, dark_mode: checked })
-              }
+              onCheckedChange={(checked) => handleSettingChange('dark_mode', checked)}
             />
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="timezone">Timezone</Label>
-              <Select
+          <div className="grid gap-4 md:grid-cols-2">            <div className="space-y-2">
+              <Label htmlFor="timezone">Timezone</Label>              <Select
                 value={settings.timezone}
-                onValueChange={(value) => setSettings({ ...settings, timezone: value })}
+                onValueChange={(value) => handleSettingChange('timezone', value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select timezone" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="America/Los_Angeles">Pacific Time (PT)</SelectItem>
-                  <SelectItem value="America/Denver">Mountain Time (MT)</SelectItem>
-                  <SelectItem value="America/Chicago">Central Time (CT)</SelectItem>
-                  <SelectItem value="America/New_York">Eastern Time (ET)</SelectItem>
-                  <SelectItem value="UTC">UTC</SelectItem>
-                  <SelectItem value="Europe/London">London (GMT)</SelectItem>
-                  <SelectItem value="Europe/Paris">Paris (CET)</SelectItem>
-                  <SelectItem value="Asia/Tokyo">Tokyo (JST)</SelectItem>
-                  <SelectItem value="Asia/Shanghai">Shanghai (CST)</SelectItem>
-                  <SelectItem value="Australia/Sydney">Sydney (AEDT)</SelectItem>
+                </SelectTrigger>                <SelectContent>
+                  <SelectItem value="Africa/Harare">Harare, Zimbabwe (GMT+2)</SelectItem>
+                  <SelectItem value="Africa/Cairo">Cairo, Egypt (GMT+2)</SelectItem>
+                  <SelectItem value="Africa/Johannesburg">Johannesburg, South Africa (GMT+2)</SelectItem>
+                  <SelectItem value="Europe/Berlin">Berlin, Germany (GMT+1/+2)</SelectItem>
+                  <SelectItem value="Europe/Paris">Paris, France (GMT+1/+2)</SelectItem>
+                  <SelectItem value="Europe/London">London, UK (GMT/+1)</SelectItem>
+                  <SelectItem value="UTC">UTC (GMT+0)</SelectItem>
+                  <SelectItem value="America/New_York">Eastern Time (GMT-5/-4)</SelectItem>
+                  <SelectItem value="America/Chicago">Central Time (GMT-6/-5)</SelectItem>
+                  <SelectItem value="America/Denver">Mountain Time (GMT-7/-6)</SelectItem>
+                  <SelectItem value="America/Los_Angeles">Pacific Time (GMT-8/-7)</SelectItem>
+                  <SelectItem value="Asia/Dubai">Dubai, UAE (GMT+4)</SelectItem>
+                  <SelectItem value="Asia/Shanghai">Shanghai, China (GMT+8)</SelectItem>
+                  <SelectItem value="Asia/Tokyo">Tokyo, Japan (GMT+9)</SelectItem>
+                  <SelectItem value="Australia/Sydney">Sydney, Australia (GMT+10/+11)</SelectItem>
                 </SelectContent>
               </Select>
+              <p className="text-xs text-muted-foreground">
+                Current time: {new Date().toLocaleString('en-US', { 
+                  timeZone: settings.timezone,
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  timeZoneName: 'short'
+                })}
+              </p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="language">Language</Label>
-              <Select
+              <Label htmlFor="language">Language</Label>              <Select
                 value={settings.language}
-                onValueChange={(value) => setSettings({ ...settings, language: value })}
+                onValueChange={(value) => handleSettingChange('language', value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select language" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="en">English</SelectItem>
-                  <SelectItem value="es">Español</SelectItem>
+                  {/* <SelectItem value="es">Español</SelectItem>
                   <SelectItem value="fr">Français</SelectItem>
                   <SelectItem value="de">Deutsch</SelectItem>
                   <SelectItem value="ja">日本語</SelectItem>
-                  <SelectItem value="zh">中文</SelectItem>
+                  <SelectItem value="zh">中文</SelectItem> */}
                 </SelectContent>
               </Select>
             </div>
           </div>
         </CardContent>
-      </Card>
-
-      {/* Save Button */}
+      </Card>      {/* Save Button */}
       <div className="flex justify-end">
-        <Button onClick={handleSave} disabled={saving}>
+        <Button onClick={() => handleSave(false)} disabled={saving}>
           {saving ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
