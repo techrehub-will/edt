@@ -40,6 +40,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Calendar as CalendarComponent } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { ProjectAttachments } from "@/components/projects/project-attachments"
 
 interface Project {
   id: string
@@ -115,16 +116,16 @@ const priorityColors = {
   "Critical": "bg-red-500"
 }
 
-export default function ProjectViewerPage() {
-  const params = useParams()
+export default function ProjectViewerPage() {  const params = useParams()
   const router = useRouter()
   const { toast } = useToast()
   const { supabase, isConnected } = useSupabase()
-    const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(true)
   const [project, setProject] = useState<Project | null>(null)
   const [milestones, setMilestones] = useState<Milestone[]>([])
   const [tasks, setTasks] = useState<Task[]>([])
   const [updates, setUpdates] = useState<ProjectUpdate[]>([])
+  const [attachments, setAttachments] = useState<any[]>([])
   const [activeTab, setActiveTab] = useState("overview")
   
   // Add milestone/task dialog states
@@ -239,9 +240,7 @@ export default function ProjectViewerPage() {
         console.error("Error loading tasks:", tasksError)
       } else {
         setTasks(tasksData || [])
-      }
-
-      // Load updates
+      }      // Load updates
       const { data: updatesData, error: updatesError } = await supabase
         .from("project_updates")
         .select("*")
@@ -252,6 +251,19 @@ export default function ProjectViewerPage() {
         console.error("Error loading updates:", updatesError)
       } else {
         setUpdates(updatesData || [])
+      }
+
+      // Load attachments
+      const { data: attachmentsData, error: attachmentsError } = await supabase
+        .from("project_attachments")
+        .select("*")
+        .eq("project_id", params.id)
+        .order("uploaded_at", { ascending: false })
+
+      if (attachmentsError) {
+        console.error("Error loading attachments:", attachmentsError)
+      } else {
+        setAttachments(attachmentsData || [])
       }
 
     } catch (error) {
@@ -1077,13 +1089,13 @@ export default function ProjectViewerPage() {
         </Card>
       </div>
 
-      {/* Main Content */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+      {/* Main Content */}      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="milestones">Milestones</TabsTrigger>
           <TabsTrigger value="tasks">Tasks</TabsTrigger>
           <TabsTrigger value="updates">Updates</TabsTrigger>
+          <TabsTrigger value="attachments">Attachments</TabsTrigger>
           <TabsTrigger value="details">Details</TabsTrigger>
         </TabsList>
 
@@ -1672,9 +1684,16 @@ export default function ProjectViewerPage() {
                     </div>
                   ))}
                 </div>
-              )}
-            </CardContent>
+              )}            </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="attachments" className="space-y-4">
+          <ProjectAttachments
+            projectId={project.id}
+            attachments={attachments}
+            onAttachmentsUpdate={setAttachments}
+          />
         </TabsContent>
 
         <TabsContent value="details" className="space-y-4">

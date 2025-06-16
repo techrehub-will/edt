@@ -26,7 +26,7 @@ import {
 } from "lucide-react"
 import { format } from "date-fns"
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
-import { useToast } from "@/hooks/use-toast"
+import { ProjectAttachments } from "./project-attachments"
 
 interface ProjectDetailsProps {
   project: any
@@ -64,10 +64,21 @@ interface ProjectUpdate {
   created_at: string
 }
 
+interface ProjectAttachment {
+  id: string
+  file_name: string
+  file_path: string
+  file_size: number
+  file_type: string
+  description?: string
+  uploaded_at: string
+}
+
 export function ProjectDetails({ project, onUpdate }: ProjectDetailsProps) {
   const [milestones, setMilestones] = useState<Milestone[]>(project.project_milestones || [])
   const [tasks, setTasks] = useState<Task[]>(project.project_tasks || [])
   const [updates, setUpdates] = useState<ProjectUpdate[]>(project.project_updates || [])
+  const [attachments, setAttachments] = useState<ProjectAttachment[]>(project.project_attachments || [])
   const [isAddingMilestone, setIsAddingMilestone] = useState(false)
   const [isAddingTask, setIsAddingTask] = useState(false)
   const [isAddingUpdate, setIsAddingUpdate] = useState(false)
@@ -262,14 +273,13 @@ export function ProjectDetails({ project, onUpdate }: ProjectDetailsProps) {
             </div>
           </div>
         </CardContent>
-      </Card>
-
-      {/* Tabs for different sections */}
+      </Card>      {/* Tabs for different sections */}
       <Tabs defaultValue="milestones" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="milestones">Milestones</TabsTrigger>
           <TabsTrigger value="tasks">Tasks</TabsTrigger>
           <TabsTrigger value="updates">Updates</TabsTrigger>
+          <TabsTrigger value="attachments">Attachments</TabsTrigger>
         </TabsList>
 
         <TabsContent value="milestones" className="space-y-4">
@@ -442,14 +452,21 @@ export function ProjectDetails({ project, onUpdate }: ProjectDetailsProps) {
                 </CardContent>
               </Card>
             ))}
-            
-            {updates.length === 0 && (
+              {updates.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
                 <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
                 <p>No updates yet. Share progress and notes about this project.</p>
               </div>
             )}
           </div>
+        </TabsContent>
+
+        <TabsContent value="attachments" className="space-y-4">
+          <ProjectAttachments
+            projectId={project.id}
+            attachments={attachments}
+            onAttachmentsUpdate={setAttachments}
+          />
         </TabsContent>
       </Tabs>
     </div>

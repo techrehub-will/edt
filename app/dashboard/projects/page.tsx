@@ -16,7 +16,6 @@ export default async function ProjectsPage() {
   if (!user) {
     return <div>Error: User not authenticated</div>
   }
-
   // Fetch all projects with enhanced data
   const { data: projects } = await supabase
     .from("improvement_projects")
@@ -44,6 +43,15 @@ export default async function ProjectsPage() {
         title,
         content,
         created_at
+      ),
+      project_attachments (
+        id,
+        file_name,
+        file_path,
+        file_size,
+        file_type,
+        description,
+        uploaded_at
       )
     `)
     .eq("user_id", user.id)
