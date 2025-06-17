@@ -5,6 +5,7 @@ import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/toaster"
 import { SupabaseProvider } from "@/lib/supabase-provider"
+// import { AuthEventTracker } from "@/components/auth-event-tracker"
 import PWALifecycle from "@/components/pwa-lifecycle"
 import PWAInstallPrompt from "@/components/pwa-install-prompt"
 import { Analytics } from '@vercel/analytics/react'
@@ -197,10 +198,9 @@ export default function RootLayout({
         />
         <meta name="msvalidate.01" content="CEDC65F3D2DA389E6CDCCF3BEA1898BE" />
         <meta name="yandex-verification" content="0c963589a54adf2e" />
-      </head>
-      <body className={inter.className} suppressHydrationWarning>
-        <SupabaseProvider>
+      </head>      <body className={inter.className} suppressHydrationWarning>        <SupabaseProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            {/* <AuthEventTracker /> */}
             <PWALifecycle />
             {children}
             <PWAInstallPrompt />

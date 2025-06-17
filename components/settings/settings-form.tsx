@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast"
 import { useSupabase } from "@/lib/supabase-provider"
 import { Settings, Bell, Moon, Globe, Save, Loader2 } from "lucide-react"
+import { sessionManager } from "@/lib/session-manager"
 
 interface UserSettings {
   notifications_enabled: boolean
@@ -148,13 +149,23 @@ export function SettingsForm() {
 
       if (error) {
         throw error
-      }
-
-      if (!silent) {
+      }      if (!silent) {
         toast({
           title: "Success",
           description: "Settings saved successfully.",
         })
+        
+        // Log security activity for settings changes
+        await sessionManager.logSecurityActivity(
+          'settings_change',
+          true,
+          'Current session',
+          navigator.userAgent,
+          { 
+            timestamp: new Date().toISOString(),
+            settings_updated: Object.keys(settings)
+          }
+        )
       }
     } catch (error) {
       console.error("Error saving settings:", error)

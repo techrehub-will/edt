@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { useSupabase } from "@/lib/supabase-provider"
+import { sessionManager } from "@/lib/session-manager"
 import { Eye, EyeOff, Loader2, Key } from "lucide-react"
 
 export function PasswordChangeForm() {
@@ -100,9 +101,7 @@ export function PasswordChangeForm() {
           variant: "destructive"
         })
         return
-      }
-
-      // Update password
+      }      // Update password
       const { error: updateError } = await supabase.auth.updateUser({
         password: newPassword
       })
@@ -116,14 +115,17 @@ export function PasswordChangeForm() {
         return
       }
 
-      // Log security activity
-      await supabase.from('security_activity').insert({
-        user_id: user.user.id,
-        activity_type: 'password_change',
-        details: { timestamp: new Date().toISOString() },
-        ip_address: 'unknown', // Could be enhanced with actual IP detection
-        user_agent: navigator.userAgent
-      }).catch(console.error) // Don't fail if logging fails
+      // Log security activity using session manager
+      await sessionManager.logSecurityActivity(
+        'password_change',
+        true,
+        'Current session',
+        navigator.userAgent,
+        { 
+          timestamp: new Date().toISOString(),
+          method: 'settings_form'
+        }
+      )
 
       toast({
         title: "Success",

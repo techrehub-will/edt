@@ -101,8 +101,7 @@ export function SecurityActivityLog() {
 
   const getBrowserInfo = (userAgent?: string) => {
     if (!userAgent) return 'Unknown Browser'
-    
-    const ua = userAgent.toLowerCase()
+      const ua = userAgent.toLowerCase()
     if (ua.includes('chrome')) return 'Chrome'
     if (ua.includes('firefox')) return 'Firefox'
     if (ua.includes('safari') && !ua.includes('chrome')) return 'Safari'
@@ -116,7 +115,7 @@ export function SecurityActivityLog() {
       const { data: user } = await supabase.auth.getUser()
       if (!user.user) return
 
-      // Try to load from security_activity table
+      // Load real security activity from the database only
       const { data: securityData, error: securityError } = await supabase
         .from('security_activity')
         .select('*')
@@ -126,54 +125,26 @@ export function SecurityActivityLog() {
 
       if (securityError && securityError.code !== 'PGRST116') {
         console.error('Error loading security activity:', securityError)
+        setActivities([])
+        return
       }
 
-      // Create demo data if no real data exists
-      const demoActivities: SecurityActivity[] = [
-        {
-          id: '1',
-          activity_type: 'sign_in',
-          timestamp: new Date().toISOString(),
-          ip_address: '192.168.1.100',
-          user_agent: navigator.userAgent,
-          success: true
-        },
-        {
-          id: '2',
-          activity_type: 'settings_change',
-          timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-          ip_address: '192.168.1.100',
-          user_agent: navigator.userAgent,
-          details: { setting: 'timezone' },
-          success: true
-        },
-        {
-          id: '3',
-          activity_type: 'password_change',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
-          ip_address: '192.168.1.100',
-          user_agent: navigator.userAgent,
-          success: true
-        },
-        {
-          id: '4',
-          activity_type: 'sign_in',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
-          ip_address: '10.0.0.50',
-          user_agent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15',
-          success: true
-        },
-        {
-          id: '5',
-          activity_type: 'failed_login',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(),
-          ip_address: '203.0.113.10',
-          user_agent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-          success: false
-        }
-      ]
-
-      setActivities(securityData && securityData.length > 0 ? securityData : demoActivities)
+      // Only use real data from database
+      if (securityData && securityData.length > 0) {
+        const mappedActivities = securityData.map(activity => ({
+          id: activity.id,
+          activity_type: activity.activity_type,
+          timestamp: activity.created_at,
+          ip_address: activity.ip_address,
+          user_agent: activity.user_agent,
+          details: activity.details,
+          success: activity.success
+        }))
+        setActivities(mappedActivities)
+      } else {
+        // No demo data - show empty state
+        setActivities([])
+      }
     } catch (error) {
       console.error("Error loading security activity:", error)
       setActivities([])
