@@ -22,7 +22,6 @@ import {
   Clock,
   CheckCircle,
   Smartphone,
-  Download,
   MessageCircle,
   Mail,
   Phone,
@@ -64,18 +63,12 @@ export default function LandingPage() {
               <span className="text-xl font-bold">EDT</span>
             </div>
           </div>          <div className="flex items-center gap-4">
-            <Link href="/dashboard/projects">
-              <Button variant="ghost" size="sm">
-                Live Demo
-              </Button>
-            </Link>
             <Link href="/login">
               <Button variant="ghost" size="sm">Sign In</Button>
             </Link>
             <Link href="/register">
               <Button size="sm" className="bg-primary hover:bg-primary/90">
-                <Download className="mr-2 h-4 w-4" />
-                Free Trial
+                Get Started
               </Button>
             </Link>
           </div>
@@ -97,17 +90,15 @@ export default function LandingPage() {
                     Accelerate your engineering career with comprehensive project tracking, goal management, and professional development analytics. Join thousands of engineers advancing their careers with EDT.
                   </p>
                 </div>
-                
-                <div className="flex flex-wrap items-center gap-4">
+                  <div className="flex flex-wrap items-center gap-4">
                   <Link href="/register">
                     <Button size="lg" className="h-12 px-8 text-lg">
-                      <Download className="mr-2 h-5 w-5" />
-                      Start Free Trial
+                      Get Started
                     </Button>
                   </Link>
-                  <Link href="/dashboard/projects">
+                  <Link href="/login">
                     <Button variant="outline" size="lg" className="h-12 px-8 text-lg">
-                      View Live Demo
+                      Sign In
                     </Button>
                   </Link>
                 </div>
@@ -127,7 +118,7 @@ export default function LandingPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span>30-day free trial</span>
+                    <span>Easy to use</span>
                   </div>
                 </div>
                 
@@ -948,9 +939,8 @@ export default function LandingPage() {
                     Sign In
                   </Button>
                 </Link>
-              </div>
-              <p className="mt-4 text-sm text-muted-foreground">
-                Free trial • No credit card required • Install as PWA
+              </div>              <p className="mt-4 text-sm text-muted-foreground">
+                No credit card required • Install as PWA • Get started today
               </p>
             </div>
           </div>        </section>
@@ -962,10 +952,9 @@ export default function LandingPage() {
               <div className="space-y-6">
                 <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
                   Ready to Accelerate Your Engineering Career?
-                </h2>
-                <p className="mx-auto max-w-[42rem] text-lg text-primary-foreground/90">
+                </h2>                <p className="mx-auto max-w-[42rem] text-lg text-primary-foreground/90">
                   Join thousands of engineers who have transformed their careers with EDT. 
-                  Start your free trial today and experience the power of structured professional development.
+                  Start tracking your progress today and experience the power of structured professional development.
                 </p>
                 
                 {/* CTA Buttons */}
@@ -976,17 +965,16 @@ export default function LandingPage() {
                       variant="secondary" 
                       className="h-14 px-8 text-lg font-semibold bg-white text-primary hover:bg-white/90"
                     >
-                      <Download className="mr-2 h-5 w-5" />
-                      Start Your Free Trial
+                      Get Started Now
                     </Button>
                   </Link>
-                  <Link href="/dashboard/projects">
+                  <Link href="/login">
                     <Button 
                       size="lg" 
                       variant="outline" 
                       className="h-14 px-8 text-lg font-semibold border-white text-white hover:bg-white/10"
                     >
-                      View Live Demo
+                      Sign In
                     </Button>
                   </Link>
                 </div>
@@ -994,8 +982,8 @@ export default function LandingPage() {
                 {/* Trust Indicators */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-12 text-primary-foreground/80">
                   <div className="flex flex-col items-center gap-2">
-                    <div className="text-2xl font-bold">30 Days</div>
-                    <div className="text-sm">Free Trial</div>
+                    <div className="text-2xl font-bold">Easy</div>
+                    <div className="text-sm">Setup</div>
                   </div>
                   <div className="flex flex-col items-center gap-2">
                     <div className="text-2xl font-bold">No Setup</div>
