@@ -1,3 +1,8 @@
+"use client"
+
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -26,6 +31,25 @@ import {
 } from "lucide-react"
 
 export default function LandingPage() {
+  const router = useRouter()
+  const supabase = createClientComponentClient()
+
+  useEffect(() => {
+    const checkUser = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session) {
+          router.push("/dashboard")
+        }
+      } catch (error) {
+        // Silently handle error - user stays on landing page
+        console.log("Auth check failed:", error)
+      }
+    }
+
+    checkUser()
+  }, [router, supabase])
+
   return (
     <>
       <SEOStructuredData type="landing" />
@@ -39,69 +63,396 @@ export default function LandingPage() {
               </div>
               <span className="text-xl font-bold">EDT</span>
             </div>
-          </div>
-          <div className="flex items-center gap-4">
+          </div>          <div className="flex items-center gap-4">
+            <Link href="/dashboard/projects">
+              <Button variant="ghost" size="sm">
+                Live Demo
+              </Button>
+            </Link>
             <Link href="/login">
-              <Button variant="ghost">Sign In</Button>
+              <Button variant="ghost" size="sm">Sign In</Button>
             </Link>
             <Link href="/register">
-              <Button>Get Started</Button>
+              <Button size="sm" className="bg-primary hover:bg-primary/90">
+                <Download className="mr-2 h-4 w-4" />
+                Free Trial
+              </Button>
             </Link>
           </div>
         </div>
-      </header>      <main className="flex-1">
-        {/* Hero Section */}
+      </header>      <main className="flex-1">        {/* Hero Section */}
         <section className="relative overflow-hidden bg-gradient-to-br from-primary/5 via-background to-secondary/5">
           <div className="container py-12 md:py-24 lg:py-32">
-            <div className="mx-auto flex max-w-[64rem] flex-col items-center gap-6 text-center">
-              <div className="space-y-4">
-                <Badge variant="outline" className="px-3 py-1">
-                  🚀 Accelerate Your Engineering Career
+            <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center">
+              {/* Hero Content */}
+              <div className="flex flex-col items-start gap-6 text-left">
+                <div className="space-y-4">
+                  <Badge variant="outline" className="px-3 py-1">
+                    🚀 Accelerate Your Engineering Career
+                  </Badge>
+                  <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl">
+                    Track Your <span className="text-primary">Technical Growth</span> & Career Progress
+                  </h1>
+                  <p className="max-w-[42rem] leading-normal text-muted-foreground sm:text-xl sm:leading-8">
+                    Accelerate your engineering career with comprehensive project tracking, goal management, and professional development analytics. Join thousands of engineers advancing their careers with EDT.
+                  </p>
+                </div>
+                
+                <div className="flex flex-wrap items-center gap-4">
+                  <Link href="/register">
+                    <Button size="lg" className="h-12 px-8 text-lg">
+                      <Download className="mr-2 h-5 w-5" />
+                      Start Free Trial
+                    </Button>
+                  </Link>
+                  <Link href="/dashboard/projects">
+                    <Button variant="outline" size="lg" className="h-12 px-8 text-lg">
+                      View Live Demo
+                    </Button>
+                  </Link>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-6 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <span>No setup required</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <span>Works offline</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <span>AI-powered insights</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <span>30-day free trial</span>
+                  </div>
+                </div>
+                
+                <Badge variant="outline" className="mt-4">
+                  <Smartphone className="mr-2 h-3 w-3" />
+                  Now Available as PWA - Install on Your Device!
                 </Badge>
-                <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl">
-                  Track Your <span className="text-primary">Technical Growth</span> & Career Progress
-                </h1>
-                <p className="mx-auto max-w-[42rem] leading-normal text-muted-foreground sm:text-xl sm:leading-8">
-                  Accelerate your engineering career with comprehensive project tracking, goal management, and professional development analytics. Join thousands of engineers advancing their careers with EDT.
+              </div>
+
+              {/* Hero Visual Mockup */}
+              <div className="relative">
+                <div className="relative z-10">
+                  {/* Main Dashboard Mockup */}
+                  <div className="bg-background border-2 border-border rounded-xl shadow-2xl overflow-hidden">
+                    {/* Header */}
+                    <div className="bg-muted/50 px-4 py-3 border-b flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                        <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                      </div>
+                      <div className="text-xs text-muted-foreground">EDT Dashboard</div>
+                    </div>
+                    
+                    {/* Navigation */}
+                    <div className="bg-primary/5 px-4 py-2 border-b">
+                      <div className="flex items-center gap-4 text-xs">
+                        <div className="px-2 py-1 bg-primary text-primary-foreground rounded">Dashboard</div>
+                        <div className="px-2 py-1 text-muted-foreground">Projects</div>
+                        <div className="px-2 py-1 text-muted-foreground">Goals</div>
+                        <div className="px-2 py-1 text-muted-foreground">Logs</div>
+                      </div>
+                    </div>
+                    
+                    {/* Dashboard Content */}
+                    <div className="p-4 space-y-4">
+                      {/* Stats Cards */}
+                      <div className="grid grid-cols-3 gap-3">
+                        <div className="bg-blue-50 dark:bg-blue-950/20 p-3 rounded-lg">
+                          <div className="text-lg font-bold text-blue-600">12</div>
+                          <div className="text-xs text-muted-foreground">Active Projects</div>
+                        </div>
+                        <div className="bg-green-50 dark:bg-green-950/20 p-3 rounded-lg">
+                          <div className="text-lg font-bold text-green-600">8/10</div>
+                          <div className="text-xs text-muted-foreground">Goals Achieved</div>
+                        </div>
+                        <div className="bg-purple-50 dark:bg-purple-950/20 p-3 rounded-lg">
+                          <div className="text-lg font-bold text-purple-600">24</div>
+                          <div className="text-xs text-muted-foreground">Tech Solutions</div>
+                        </div>
+                      </div>
+                      
+                      {/* Recent Activity */}
+                      <div className="space-y-2">
+                        <div className="text-sm font-medium">Recent Activity</div>
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 text-xs">
+                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <span>Completed: PLC Programming Goal</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs">
+                            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                            <span>Updated: Automation Project Alpha</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs">
+                            <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                            <span>Added: HMI Troubleshooting Log</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Floating AI Assistant */}
+                  <div className="absolute -bottom-4 -right-4 bg-primary text-primary-foreground p-3 rounded-full shadow-lg">
+                    <Brain className="h-6 w-6" />
+                  </div>
+                </div>
+                
+                {/* Background Elements */}
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-2xl blur-3xl transform rotate-6"></div>
+                <div className="absolute -top-4 -left-4 w-16 h-16 bg-primary/30 rounded-full blur-xl"></div>
+                <div className="absolute -bottom-8 -right-8 w-24 h-24 bg-secondary/30 rounded-full blur-xl"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* App Screenshots/Mockups Section */}
+        <section className="container py-12 md:py-24 lg:py-32 bg-muted/30">
+          <div className="mx-auto max-w-[64rem] text-center mb-12">
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl mb-4">
+              See EDT in Action
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              Explore the powerful features that make EDT the premier choice for engineering professionals
+            </p>
+          </div>
+
+          <div className="grid gap-12 lg:gap-16">
+            {/* Projects Interface */}
+            <div className="grid gap-8 lg:grid-cols-2 lg:gap-16 items-center">
+              <div className="space-y-4">
+                <Badge variant="outline" className="w-fit">
+                  <Target className="mr-2 h-3 w-3" />
+                  Project Management
+                </Badge>
+                <h3 className="text-2xl font-bold">Comprehensive Project Tracking</h3>
+                <p className="text-muted-foreground">
+                  Manage complex engineering projects with timeline tracking, budget monitoring, 
+                  and team collaboration tools designed specifically for technical professionals.
                 </p>
-              </div>
-              <Badge variant="outline" className="mb-4">
-                <Smartphone className="mr-2 h-3 w-3" />
-                Now Available as PWA - Install on Your Device!
-              </Badge>
-              <h1 className="text-4xl font-bold tracking-tight sm:text-6xl md:text-7xl lg:text-8xl">
-                Engineering Development
-                <span className="text-primary"> Tracker</span>
-              </h1>
-              <p className="max-w-[42rem] text-lg text-muted-foreground sm:text-xl">
-                The complete platform for tracking your engineering development journey. Set SMART goals, 
-                document technical solutions, manage improvement projects, and get AI-powered insights.
-              </p>
-              <div className="flex flex-wrap items-center justify-center gap-4">
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <span>Gantt charts and milestone tracking</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <span>Resource allocation and budget management</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <span>Technical documentation integration</span>
+                  </li>
+                </ul>
                 <Link href="/register">
-                  <Button size="lg" className="h-12 px-8">
-                    <Download className="mr-2 h-5 w-5" />
-                    Start Free Trial
-                  </Button>
-                </Link>
-                <Link href="/login">
-                  <Button variant="outline" size="lg" className="h-12 px-8">
-                    Sign In
+                  <Button className="mt-4">
+                    Try Project Management
                   </Button>
                 </Link>
               </div>
-              <div className="flex items-center gap-8 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-500" />
-                  <span>No setup required</span>
+              
+              <div className="relative">
+                <div className="bg-background border-2 border-border rounded-xl shadow-xl overflow-hidden">
+                  <div className="bg-muted/50 px-4 py-3 border-b">
+                    <div className="text-sm font-medium">Project: Industrial Automation Upgrade</div>
+                  </div>
+                  <div className="p-4 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm font-medium">Progress: 68%</div>
+                      <Badge variant="secondary">On Track</Badge>
+                    </div>                    <div className="w-full bg-muted rounded-full h-2">
+                      <div className="bg-primary h-2 rounded-full w-[68%]"></div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <div className="text-muted-foreground">Budget Used</div>
+                        <div className="font-medium">$45,200 / $65,000</div>
+                      </div>
+                      <div>
+                        <div className="text-muted-foreground">Days Remaining</div>
+                        <div className="font-medium">12 days</div>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="text-sm font-medium">Recent Tasks</div>
+                      <div className="space-y-1 text-xs">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle className="h-3 w-3 text-green-500" />
+                          <span>PLC programming completed</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-3 w-3 text-yellow-500" />
+                          <span>HMI configuration in progress</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-3 w-3 text-muted-foreground" />
+                          <span>System testing scheduled</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-500" />
-                  <span>Works offline</span>
+              </div>
+            </div>
+
+            {/* Goals Interface */}
+            <div className="grid gap-8 lg:grid-cols-2 lg:gap-16 items-center">
+              <div className="order-2 lg:order-1 relative">
+                <div className="bg-background border-2 border-border rounded-xl shadow-xl overflow-hidden">
+                  <div className="bg-muted/50 px-4 py-3 border-b">
+                    <div className="text-sm font-medium">Development Goals</div>
+                  </div>
+                  <div className="p-4 space-y-4">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
+                        <div>
+                          <div className="text-sm font-medium">Master PLC Programming</div>
+                          <div className="text-xs text-muted-foreground">Technical Skills</div>
+                        </div>
+                        <Badge variant="default" className="bg-green-500">Completed</Badge>
+                      </div>
+                      <div className="p-3 border rounded-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <div>
+                            <div className="text-sm font-medium">Learn Industry 4.0 Technologies</div>
+                            <div className="text-xs text-muted-foreground">Innovation • Due: Mar 2025</div>
+                          </div>
+                          <div className="text-xs text-muted-foreground">75%</div>
+                        </div>                        <div className="w-full bg-muted rounded-full h-1.5">
+                          <div className="bg-blue-500 h-1.5 rounded-full w-[75%]"></div>
+                        </div>
+                      </div>
+                      <div className="p-3 border rounded-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <div>
+                            <div className="text-sm font-medium">Obtain Six Sigma Green Belt</div>
+                            <div className="text-xs text-muted-foreground">Process Improvement • Due: Jun 2025</div>
+                          </div>
+                          <div className="text-xs text-muted-foreground">30%</div>
+                        </div>                        <div className="w-full bg-muted rounded-full h-1.5">
+                          <div className="bg-purple-500 h-1.5 rounded-full w-[30%]"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-500" />
-                  <span>AI-powered insights</span>
+              </div>
+              
+              <div className="order-1 lg:order-2 space-y-4">
+                <Badge variant="outline" className="w-fit">
+                  <TrendingUp className="mr-2 h-3 w-3" />
+                  SMART Goals
+                </Badge>
+                <h3 className="text-2xl font-bold">AI-Powered Goal Setting</h3>
+                <p className="text-muted-foreground">
+                  Set and achieve professional development goals with AI-powered recommendations, 
+                  progress tracking, and personalized learning paths.
+                </p>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <span>SMART criteria validation</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <span>AI-suggested learning resources</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <span>Progress analytics and insights</span>
+                  </li>
+                </ul>
+                <Link href="/register">
+                  <Button className="mt-4">
+                    Start Setting Goals
+                  </Button>
+                </Link>
+              </div>
+            </div>
+
+            {/* AI Assistant Interface */}
+            <div className="grid gap-8 lg:grid-cols-2 lg:gap-16 items-center">
+              <div className="space-y-4">
+                <Badge variant="outline" className="w-fit">
+                  <Brain className="mr-2 h-3 w-3" />
+                  AI Assistant
+                </Badge>
+                <h3 className="text-2xl font-bold">Your Intelligent Engineering Copilot</h3>
+                <p className="text-muted-foreground">
+                  Get instant insights, recommendations, and answers from an AI that understands 
+                  your engineering projects, goals, and technical challenges.
+                </p>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <span>Project performance analysis</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <span>Technical problem-solving assistance</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <span>Career development guidance</span>
+                  </li>
+                </ul>
+                <Link href="/dashboard/ai-copilot">
+                  <Button className="mt-4">
+                    Chat with AI Assistant
+                  </Button>
+                </Link>
+              </div>
+              
+              <div className="relative">
+                <div className="bg-background border-2 border-border rounded-xl shadow-xl overflow-hidden">
+                  <div className="bg-gradient-to-r from-primary/10 to-purple-500/10 px-4 py-3 border-b">
+                    <div className="flex items-center gap-2">
+                      <Brain className="h-4 w-4 text-primary" />
+                      <div className="text-sm font-medium">AI Engineering Copilot</div>
+                    </div>
+                  </div>
+                  <div className="p-4 space-y-3 max-h-64 overflow-hidden">
+                    <div className="flex justify-start">
+                      <div className="bg-muted p-3 rounded-lg max-w-[80%] text-xs">
+                        How can I optimize the efficiency of my current automation project?
+                      </div>
+                    </div>
+                    <div className="flex justify-end">
+                      <div className="bg-primary text-primary-foreground p-3 rounded-lg max-w-[80%] text-xs">
+                        Based on your project data, I recommend:
+                        <div className="mt-2 space-y-1">
+                          <div>• Implement predictive maintenance (20% efficiency gain)</div>
+                          <div>• Optimize PLC logic loops (15% speed improvement)</div>
+                          <div>• Add data analytics dashboard for monitoring</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex justify-start">
+                      <div className="bg-muted p-3 rounded-lg max-w-[80%] text-xs">
+                        What skills should I focus on for career advancement?
+                      </div>
+                    </div>
+                    <div className="flex justify-end">
+                      <div className="bg-primary text-primary-foreground p-3 rounded-lg max-w-[80%] text-xs">
+                        Based on industry trends and your goals:
+                        <div className="mt-2 space-y-1">
+                          <div>• IoT integration (High demand)</div>
+                          <div>• Machine learning for predictive analytics</div>
+                          <div>• Cybersecurity for industrial systems</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -602,9 +953,95 @@ export default function LandingPage() {
                 Free trial • No credit card required • Install as PWA
               </p>
             </div>
+          </div>        </section>
+
+        {/* Final CTA Section */}
+        <section className="relative overflow-hidden bg-gradient-to-r from-primary to-primary/80">
+          <div className="container py-16 md:py-24">
+            <div className="mx-auto max-w-[64rem] text-center text-primary-foreground">
+              <div className="space-y-6">
+                <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
+                  Ready to Accelerate Your Engineering Career?
+                </h2>
+                <p className="mx-auto max-w-[42rem] text-lg text-primary-foreground/90">
+                  Join thousands of engineers who have transformed their careers with EDT. 
+                  Start your free trial today and experience the power of structured professional development.
+                </p>
+                
+                {/* CTA Buttons */}
+                <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
+                  <Link href="/register">
+                    <Button 
+                      size="lg" 
+                      variant="secondary" 
+                      className="h-14 px-8 text-lg font-semibold bg-white text-primary hover:bg-white/90"
+                    >
+                      <Download className="mr-2 h-5 w-5" />
+                      Start Your Free Trial
+                    </Button>
+                  </Link>
+                  <Link href="/dashboard/projects">
+                    <Button 
+                      size="lg" 
+                      variant="outline" 
+                      className="h-14 px-8 text-lg font-semibold border-white text-white hover:bg-white/10"
+                    >
+                      View Live Demo
+                    </Button>
+                  </Link>
+                </div>
+                
+                {/* Trust Indicators */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-12 text-primary-foreground/80">
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="text-2xl font-bold">30 Days</div>
+                    <div className="text-sm">Free Trial</div>
+                  </div>
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="text-2xl font-bold">No Setup</div>
+                    <div className="text-sm">Required</div>
+                  </div>
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="text-2xl font-bold">24/7</div>
+                    <div className="text-sm">Access</div>
+                  </div>
+                </div>
+                
+                {/* Social Proof */}
+                <div className="pt-8 border-t border-primary-foreground/20">
+                  <p className="text-sm text-primary-foreground/80 mb-4">
+                    Trusted by engineering professionals worldwide
+                  </p>
+                  <div className="flex items-center justify-center gap-6 text-xs text-primary-foreground/70">
+                    <div className="flex items-center gap-2">
+                      <Award className="h-4 w-4" />
+                      <span>Industry Leading</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Shield className="h-4 w-4" />
+                      <span>Secure & Private</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Users className="h-4 w-4" />
+                      <span>1000+ Engineers</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Background decorations */}
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-transparent"></div>
+          <div className="absolute top-0 left-0 w-full h-full opacity-10">
+            <div className="absolute top-10 left-10 w-20 h-20 bg-white rounded-full blur-xl"></div>
+            <div className="absolute bottom-10 right-10 w-32 h-32 bg-white rounded-full blur-xl"></div>
+            <div className="absolute top-1/2 left-1/3 w-16 h-16 bg-white rounded-full blur-xl"></div>
           </div>
         </section>
-      </main>      <footer className="border-t bg-background/80">
+      </main>
+
+      <footer className="border-t bg-background/80">
         {/* Contact Section */}
         <div className="container py-12">
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">

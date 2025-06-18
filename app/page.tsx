@@ -1,5 +1,3 @@
-import { redirect } from "next/navigation"
-import { createServerClient } from "@/lib/supabase-server"
 import LandingPage from "@/components/landing-page"
 import { Metadata } from "next"
 
@@ -40,20 +38,6 @@ export const metadata: Metadata = {
   }
 }
 
-export default async function Home() {
-  const supabase = await createServerClient()
-  
-  if (!supabase) {
-    return <LandingPage />
-  }
-  
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
-
-  if (session) {
-    redirect("/dashboard")
-  }
-
+export default function Home() {
   return <LandingPage />
 }
