@@ -1,12 +1,11 @@
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs"
+import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs"
 import { cookies } from "next/headers"
 import type { Database } from "@/lib/database.types"
 
 export const createServerClient = async () => {
   try {
-    const cookieStore = cookies()
-    return createServerComponentClient<Database>({ 
-      cookies: () => cookieStore 
+    return createRouteHandlerClient<Database>({ 
+      cookies: await cookies
     })
   } catch (error) {
     console.warn("Server Supabase client creation failed:", error)

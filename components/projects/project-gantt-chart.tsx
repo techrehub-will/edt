@@ -26,6 +26,7 @@ interface ProjectGanttChartProps {
 
 export function ProjectGanttChart({ project, milestones, tasks }: ProjectGanttChartProps) {
   const [currentWeek, setCurrentWeek] = useState(new Date())
+  const [viewMode, setViewMode] = useState<'week' | 'month'>('week')
     // Combine milestones and tasks into gantt items
   const ganttItems: GanttItem[] = useMemo(() => {
     const items: GanttItem[] = []
@@ -155,8 +156,24 @@ export function ProjectGanttChart({ project, milestones, tasks }: ProjectGanttCh
             <BarChart3 className="h-5 w-5" />
             <CardTitle>Project Timeline</CardTitle>
           </div>
-          
-          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 border rounded p-1">
+              <Button 
+                variant={viewMode === 'week' ? 'default' : 'ghost'} 
+                size="sm"
+                onClick={() => setViewMode('week')}
+              >
+                Week
+              </Button>
+              <Button 
+                variant={viewMode === 'month' ? 'default' : 'ghost'} 
+                size="sm"
+                onClick={() => setViewMode('month')}
+              >
+                Month
+              </Button>
+            </div>
+            <div className="h-4 border-l"></div>
             <Button variant="outline" size="sm" onClick={goToPreviousWeek}>
               <ChevronLeft className="h-4 w-4" />
             </Button>
@@ -167,10 +184,10 @@ export function ProjectGanttChart({ project, milestones, tasks }: ProjectGanttCh
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
-        </div>
-        
+        </div>        
         <p className="text-sm text-muted-foreground">
-          Week of {format(weekStart, 'MMM d')} - {format(weekEnd, 'MMM d, yyyy')}
+          Week of {format(weekStart, 'MMM d')} - {format(weekEnd, 'MMM d, yyyy')} • 
+          {ganttItems.length} total items ({milestones.length} milestones, {tasks.length} tasks)
         </p>
       </CardHeader>
       
