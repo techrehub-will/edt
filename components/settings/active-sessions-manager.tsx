@@ -32,15 +32,32 @@ export function ActiveSessionsManager() {
       default:
         return <Monitor className="h-4 w-4" />
     }
-  }
-  const loadSessions = async () => {
+  }  const loadSessions = async () => {
     try {
       const { data: user } = await supabase.auth.getUser()
       if (!user.user) return
 
-      // Load real sessions from database only
+      // Load real sessions from database
       const realSessions = await sessionManager.getSessions()
-      setSessions(realSessions)
+      
+      // If no sessions exist, create one for the current session
+      if (realSessions.length === 0) {
+        console.log('No sessions found, creating current session')
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session) {
+          // Create a session for the current browser session
+          await sessionManager.createSession(
+            session.access_token, 
+            navigator.userAgent, 
+            'Current session'
+          )
+          // Reload sessions after creating current one
+          const updatedSessions = await sessionManager.getSessions()
+          setSessions(updatedSessions)
+        }
+      } else {
+        setSessions(realSessions)
+      }
       
     } catch (error) {
       console.error("Error loading sessions:", error)
@@ -126,33 +143,49 @@ export function ActiveSessionsManager() {
       </div>
     )
   }
-
   if (sessions.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
         <Monitor className="h-8 w-8 mx-auto mb-2" />
         <p>No active sessions found</p>
+        <p className="text-xs mt-2">Sessions will be automatically created when you sign in</p>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={loadSessions}
+          className="mt-4"
+        >
+          Refresh Sessions
+        </Button>
       </div>
     )
   }
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
           Manage your active sessions across all devices
         </p>
-        {sessions.filter(s => !s.is_current).length > 0 && (
+        <div className="flex items-center gap-2">
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
-            onClick={terminateAllOtherSessions}
-            className="text-destructive hover:text-destructive"
+            onClick={loadSessions}
+            disabled={loading}
           >
-            <LogOut className="h-4 w-4 mr-2" />
-            Terminate All Others
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Refresh"}
           </Button>
-        )}
+          {sessions.filter(s => !s.is_current).length > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={terminateAllOtherSessions}
+              className="text-destructive hover:text-destructive"
+            >              <LogOut className="h-4 w-4 mr-2" />
+              Terminate All Others
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="space-y-3">

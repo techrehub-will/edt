@@ -397,7 +397,7 @@ export default function LandingPage() {
                     <span>Career development guidance</span>
                   </li>
                 </ul>
-                <Link href="/dashboard/ai-copilot">
+                <Link href="/register">
                   <Button className="mt-4">
                     Chat with AI Assistant
                   </Button>
@@ -918,7 +918,7 @@ export default function LandingPage() {
         </section>
 
         {/* CTA Section */}
-        <section className="bg-primary/5 py-12 md:py-24">
+        {/* <section className="bg-primary/5 py-12 md:py-24">
           <div className="container">
             <div className="mx-auto max-w-[64rem] text-center">
               <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
@@ -941,7 +941,7 @@ export default function LandingPage() {
                 No credit card required • Install as PWA • Get started today
               </p>
             </div>
-          </div>        </section>
+          </div>        </section> */}
 
         {/* Final CTA Section */}
         <section className="relative overflow-hidden bg-gradient-to-r from-primary to-primary/80">

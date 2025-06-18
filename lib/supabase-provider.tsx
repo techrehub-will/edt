@@ -5,6 +5,7 @@ import { createContext, useContext, useState, useEffect } from "react"
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import type { SupabaseClient } from "@supabase/auth-helpers-nextjs"
 import type { Database } from "@/lib/database.types"
+import { authEventTracker } from "@/lib/auth-event-tracker"
 
 type SupabaseContext = {
   supabase: SupabaseClient<Database>
@@ -32,10 +33,11 @@ export function SupabaseProvider({ children }: { children: React.ReactNode }) {
           setError("Demo Mode - Database not connected")
           setIsConnected(false)
           return
-        }
-
-        setIsConnected(true)
+        }        setIsConnected(true)
         setError(null)
+
+        // Initialize auth event tracking for sessions
+        authEventTracker.init()
 
         // Set up auth state listener only if connection works
         const {
