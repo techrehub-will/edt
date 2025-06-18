@@ -927,10 +927,8 @@ export default function LandingPage() {
               <p className="mt-4 text-lg text-muted-foreground">
                 Join engineers who are already tracking their growth and achieving their goals
               </p>
-              <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-                <Link href="/register">
+              <div className="mt-8 flex flex-wrap items-center justify-center gap-4">                <Link href="/register">
                   <Button size="lg" className="h-12 px-8">
-                    <Download className="mr-2 h-5 w-5" />
                     Start Your Journey
                   </Button>
                 </Link>
