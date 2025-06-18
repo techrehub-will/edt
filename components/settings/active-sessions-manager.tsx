@@ -20,7 +20,6 @@ export function ActiveSessionsManager() {
   useEffect(() => {
     loadSessions()
   }, [])
-
   const getDeviceIcon = (deviceType: string) => {
     switch (deviceType) {
       case 'mobile':
@@ -32,7 +31,9 @@ export function ActiveSessionsManager() {
       default:
         return <Monitor className="h-4 w-4" />
     }
-  }  const loadSessions = async () => {
+  };
+
+  const loadSessions = async () => {
     try {
       const { data: user } = await supabase.auth.getUser()
       if (!user.user) return
@@ -175,13 +176,13 @@ export function ActiveSessionsManager() {
           >
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Refresh"}
           </Button>
-          {sessions.filter(s => !s.is_current).length > 0 && (
-            <Button
+          {sessions.filter(s => !s.is_current).length > 0 && (            <Button
               variant="outline"
               size="sm"
               onClick={terminateAllOtherSessions}
               className="text-destructive hover:text-destructive"
-            >              <LogOut className="h-4 w-4 mr-2" />
+            >
+              <LogOut className="h-4 w-4 mr-2" />
               Terminate All Others
             </Button>
           )}
