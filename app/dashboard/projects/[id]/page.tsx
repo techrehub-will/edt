@@ -42,6 +42,7 @@ import { Calendar as CalendarComponent } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { ProjectAttachments } from "@/components/projects/project-attachments"
 import { ProjectUpdates } from "@/components/projects/project-updates"
+import { ProjectGanttChart } from "@/components/projects/project-gantt-chart"
 
 interface Project {
   id: string
@@ -1093,11 +1094,11 @@ export default function ProjectViewerPage() {  const params = useParams()
         </Card>
       </div>
 
-      {/* Main Content */}      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList>
+      {/* Main Content */}      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">        <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="milestones">Milestones</TabsTrigger>
           <TabsTrigger value="tasks">Tasks</TabsTrigger>
+          <TabsTrigger value="timeline">Timeline</TabsTrigger>
           <TabsTrigger value="updates">Updates</TabsTrigger>
           <TabsTrigger value="attachments">Attachments</TabsTrigger>
           <TabsTrigger value="details">Details</TabsTrigger>
@@ -1642,9 +1643,18 @@ export default function ProjectViewerPage() {  const params = useParams()
                   ))}
                 </div>
               )}
-            </CardContent>
-          </Card>
-        </TabsContent>        <TabsContent value="updates" className="space-y-4">
+            </CardContent>          </Card>
+        </TabsContent>
+
+        <TabsContent value="timeline" className="space-y-4">
+          <ProjectGanttChart
+            project={project}
+            milestones={milestones}
+            tasks={tasks}
+          />
+        </TabsContent>
+
+        <TabsContent value="updates" className="space-y-4">
           <ProjectUpdates
             projectId={project.id}
             updates={updates}
