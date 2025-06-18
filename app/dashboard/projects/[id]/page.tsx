@@ -40,6 +40,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Calendar as CalendarComponent } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 import { ProjectAttachments } from "@/components/projects/project-attachments"
 import { ProjectUpdates } from "@/components/projects/project-updates"
 import { ProjectGanttChart } from "@/components/projects/project-gantt-chart"
@@ -845,6 +846,120 @@ export default function ProjectViewerPage() {  const params = useParams()
                 new Paragraph({ text: "" }), // Empty line
               ] : []),
               
+              // Timeline/Gantt Chart Section
+              ...(milestones.length > 0 || tasks.length > 0 ? [
+                new Paragraph({
+                  text: "Project Timeline",
+                  heading: HeadingLevel.HEADING_1,
+                }),
+                
+                new Paragraph({
+                  children: [
+                    new TextRun({ text: "Project Timeline Overview", bold: true }),
+                  ],
+                }),
+                
+                new Paragraph({
+                  children: [
+                    new TextRun({ text: "Start Date: ", bold: true }),
+                    new TextRun({ text: formatDate(project.start_date) }),
+                  ],
+                }),
+                
+                new Paragraph({
+                  children: [
+                    new TextRun({ text: "Target Completion: ", bold: true }),
+                    new TextRun({ text: formatDate(project.target_completion_date) }),
+                  ],
+                }),
+                
+                ...(project.actual_completion_date ? [
+                  new Paragraph({
+                    children: [
+                      new TextRun({ text: "Actual Completion: ", bold: true }),
+                      new TextRun({ text: formatDate(project.actual_completion_date) }),
+                    ],
+                  }),
+                ] : []),
+                
+                new Paragraph({ text: "" }), // Empty line
+                
+                // Timeline Table
+                new Table({
+                  width: {
+                    size: 100,
+                    type: WidthType.PERCENTAGE,
+                  },
+                  rows: [
+                    new TableRow({
+                      children: [
+                        new TableCell({
+                          children: [new Paragraph({ children: [new TextRun({ text: "Type", bold: true })] })],
+                        }),
+                        new TableCell({
+                          children: [new Paragraph({ children: [new TextRun({ text: "Item", bold: true })] })],
+                        }),
+                        new TableCell({
+                          children: [new Paragraph({ children: [new TextRun({ text: "Start/Target Date", bold: true })] })],
+                        }),
+                        new TableCell({
+                          children: [new Paragraph({ children: [new TextRun({ text: "End/Completion Date", bold: true })] })],
+                        }),
+                        new TableCell({
+                          children: [new Paragraph({ children: [new TextRun({ text: "Status", bold: true })] })],
+                        }),
+                      ],
+                    }),
+                    // Add milestones to timeline
+                    ...milestones.map(milestone =>
+                      new TableRow({
+                        children: [
+                          new TableCell({
+                            children: [new Paragraph({ children: [new TextRun({ text: "Milestone", bold: true, color: "0066CC" })] })],
+                          }),
+                          new TableCell({
+                            children: [new Paragraph({ text: milestone.title })],
+                          }),
+                          new TableCell({
+                            children: [new Paragraph({ text: formatDate(milestone.target_date) })],
+                          }),
+                          new TableCell({
+                            children: [new Paragraph({ text: milestone.completion_date ? formatDate(milestone.completion_date) : "Not completed" })],
+                          }),
+                          new TableCell({
+                            children: [new Paragraph({ text: milestone.status.replace("_", " ").toUpperCase() })],
+                          }),
+                        ],
+                      })
+                    ),
+                    // Add tasks to timeline
+                    ...tasks.map(task =>
+                      new TableRow({
+                        children: [
+                          new TableCell({
+                            children: [new Paragraph({ children: [new TextRun({ text: "Task", color: "009900" })] })],
+                          }),
+                          new TableCell({
+                            children: [new Paragraph({ text: task.title })],
+                          }),
+                          new TableCell({
+                            children: [new Paragraph({ text: task.due_date ? formatDate(task.due_date) : "No due date" })],
+                          }),
+                          new TableCell({
+                            children: [new Paragraph({ text: task.completion_date ? formatDate(task.completion_date) : "Not completed" })],
+                          }),
+                          new TableCell({
+                            children: [new Paragraph({ text: task.status.replace("_", " ").toUpperCase() })],
+                          }),
+                        ],
+                      })
+                    ),
+                  ],
+                }),
+                
+                new Paragraph({ text: "" }), // Empty line
+              ] : []),
+
               // Tasks section
               ...(tasks.length > 0 ? [
                 new Paragraph({
@@ -952,10 +1067,110 @@ export default function ProjectViewerPage() {  const params = useParams()
         title: "Error",
         description: "Failed to export project to DOCX.",
         variant: "destructive",
+      })    } finally {
+      setExporting(false)
+    }
+  }
+
+  // Export Gantt Chart as PDF
+  const handleExportGanttToPdf = async () => {
+    if (!project) return
+
+    setExporting(true)
+    try {
+      const jsPDF = (await import("jspdf")).default
+      
+      const doc = new jsPDF()
+      
+      // Title
+      doc.setFontSize(20)
+      doc.text(project.title + " - Timeline", 20, 20)
+      
+      // Project info
+      doc.setFontSize(12)
+      doc.text("System: " + project.system, 20, 35)
+      doc.text("Start Date: " + formatDate(project.start_date), 20, 45)
+      doc.text("Target Completion: " + formatDate(project.target_completion_date), 20, 55)
+      
+      // Timeline data
+      let yPosition = 75
+      
+      // Milestones section
+      if (milestones.length > 0) {
+        doc.setFontSize(16)
+        doc.text("Milestones", 20, yPosition)
+        yPosition += 15
+        
+        doc.setFontSize(10)
+        milestones.forEach((milestone, index) => {
+          const status = milestone.status.replace("_", " ").toUpperCase()
+          const targetDate = formatDate(milestone.target_date)
+          const completionDate = milestone.completion_date ? formatDate(milestone.completion_date) : "Not completed"
+          
+          doc.text(`${index + 1}. ${milestone.title}`, 25, yPosition)
+          yPosition += 7
+          doc.text(`   Status: ${status} | Target: ${targetDate} | Completed: ${completionDate}`, 25, yPosition)
+          yPosition += 12
+        })
+        yPosition += 10
+      }
+      
+      // Tasks section
+      if (tasks.length > 0) {
+        doc.setFontSize(16)
+        doc.text("Tasks", 20, yPosition)
+        yPosition += 15
+        
+        doc.setFontSize(10)
+        tasks.forEach((task, index) => {
+          if (yPosition > 280) { // Create new page if needed
+            doc.addPage()
+            yPosition = 20
+          }
+          
+          const status = task.status.replace("_", " ").toUpperCase()
+          const dueDate = task.due_date ? formatDate(task.due_date) : "No due date"
+          const completionDate = task.completion_date ? formatDate(task.completion_date) : "Not completed"
+          
+          doc.text(`${index + 1}. ${task.title}`, 25, yPosition)
+          yPosition += 7
+          doc.text(`   Status: ${status} | Priority: ${task.priority} | Due: ${dueDate}`, 25, yPosition)
+          yPosition += 7
+          doc.text(`   Completed: ${completionDate}`, 25, yPosition)
+          yPosition += 12
+        })
+      }
+      
+      // Footer
+      const pageCount = doc.getNumberOfPages()
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i)
+        doc.setFontSize(8)
+        doc.text(`Generated on ${format(new Date(), "PPP")} - Page ${i} of ${pageCount}`, 20, 290)
+      }
+      
+      doc.save(`${project.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_timeline.pdf`)
+
+      toast({
+        title: "Success",
+        description: "Timeline exported to PDF successfully.",
+      })
+    } catch (error) {
+      console.error("Error exporting timeline to PDF:", error)
+      toast({
+        title: "Error",
+        description: "Failed to export timeline to PDF.",
+        variant: "destructive",
       })
     } finally {
       setExporting(false)
     }
+  }
+
+  // Export Combined Report (DOCX with enhanced timeline)
+  const handleExportCombinedReport = async () => {
+    // This uses the existing handleExportToDocx which now includes the timeline
+    await handleExportToDocx()
   }
 
   if (loading) {
@@ -1013,25 +1228,53 @@ export default function ProjectViewerPage() {  const params = useParams()
             className={`${getPriorityColor(project.priority)} text-white`}
           >
             {project.priority} Priority
-          </Badge>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleExportToDocx}
-            disabled={exporting}
-          >
-            {exporting ? (
-              <>
-                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-gray-900 mr-2"></div>
-                Exporting...
-              </>
-            ) : (
-              <>
-                <Download className="mr-2 h-4 w-4" />
-                Export DOCX
-              </>
-            )}
-          </Button>
+          </Badge>          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                disabled={exporting}
+              >
+                {exporting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-gray-900 mr-2"></div>
+                    Exporting...
+                  </>
+                ) : (
+                  <>
+                    <Download className="mr-2 h-4 w-4" />
+                    Export
+                  </>
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={handleExportCombinedReport}>
+                <FileText className="mr-2 h-4 w-4" />
+                Complete Report (DOCX)
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleExportGanttToPdf}>
+                <Calendar className="mr-2 h-4 w-4" />
+                Timeline Chart (PDF)
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem 
+                onClick={() => {
+                  // Scroll to timeline tab and switch to it
+                  setActiveTab("timeline")
+                  setTimeout(() => {
+                    const timelineElement = document.querySelector('[data-state="active"][value="timeline"]')
+                    if (timelineElement) {
+                      timelineElement.scrollIntoView({ behavior: 'smooth' })
+                    }
+                  }, 100)
+                }}
+              >
+                <Target className="mr-2 h-4 w-4" />
+                View Timeline
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Link href={`/dashboard/projects/${project.id}/edit`}>
             <Button size="sm">
               <Edit className="mr-2 h-4 w-4" />
