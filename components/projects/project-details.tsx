@@ -28,6 +28,7 @@ import { format } from "date-fns"
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import { useToast } from "@/hooks/use-toast"
 import { ProjectAttachments } from "./project-attachments"
+import { ProjectGanttChart } from "./project-gantt-chart"
 
 interface ProjectDetailsProps {
   project: any
@@ -276,9 +277,10 @@ export function ProjectDetails({ project, onUpdate }: ProjectDetailsProps) {
         </CardContent>
       </Card>      {/* Tabs for different sections */}
       <Tabs defaultValue="milestones" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="milestones">Milestones</TabsTrigger>
           <TabsTrigger value="tasks">Tasks</TabsTrigger>
+          <TabsTrigger value="gantt">Timeline</TabsTrigger>
           <TabsTrigger value="updates">Updates</TabsTrigger>
           <TabsTrigger value="attachments">Attachments</TabsTrigger>
         </TabsList>
@@ -459,7 +461,14 @@ export function ProjectDetails({ project, onUpdate }: ProjectDetailsProps) {
                 <p>No updates yet. Share progress and notes about this project.</p>
               </div>
             )}
-          </div>
+          </div>        </TabsContent>
+
+        <TabsContent value="gantt" className="space-y-4">
+          <ProjectGanttChart
+            project={project}
+            milestones={milestones}
+            tasks={tasks}
+          />
         </TabsContent>
 
         <TabsContent value="attachments" className="space-y-4">
