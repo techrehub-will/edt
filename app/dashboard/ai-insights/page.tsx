@@ -1,5 +1,8 @@
 import { AIInsightsPanel } from "@/components/ai/ai-insights-panel"
 
+// Force dynamic rendering since this page uses server-side data
+export const dynamic = 'force-dynamic'
+
 export default function AIInsightsPage() {
   return (
     <div className="space-y-6">

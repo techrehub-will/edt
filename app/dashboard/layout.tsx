@@ -4,6 +4,9 @@ import { createServerClient } from "@/lib/supabase-server"
 import Sidebar from "@/components/sidebar"
 import Header from "@/components/header"
 
+// Force dynamic rendering since this layout uses server-side authentication
+export const dynamic = 'force-dynamic'
+
 export default async function DashboardLayout({
   children,
 }: {

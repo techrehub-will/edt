@@ -1,6 +1,9 @@
 import { createServerClient } from "@/lib/supabase-server"
 import { ProjectsDashboard } from "@/components/projects/projects-dashboard"
 
+// Force dynamic rendering since this page uses server-side authentication
+export const dynamic = 'force-dynamic'
+
 export default async function ProjectsPage() {
   const supabase = await createServerClient()
 

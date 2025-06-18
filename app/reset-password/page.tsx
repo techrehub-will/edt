@@ -1,6 +1,9 @@
 import { Suspense } from "react"
 import { ResetPasswordForm } from "@/components/auth/reset-password-form"
 
+// Force dynamic rendering since this page handles authentication tokens
+export const dynamic = 'force-dynamic'
+
 function ResetPasswordContent() {
   return (
     <div className="container flex h-screen w-screen flex-col items-center justify-center">

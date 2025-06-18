@@ -4,6 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Home, Search, ArrowLeft } from 'lucide-react'
 import { Metadata } from 'next'
 
+// Force dynamic rendering to avoid webpack issues during static generation
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: '404 - Page Not Found | Engineering Development Tracker',
   description: 'The page you are looking for does not exist. Return to EDT to continue tracking your engineering development and career progress.',

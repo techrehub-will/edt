@@ -1,5 +1,8 @@
 import { ForgotPasswordForm } from "@/components/auth/forgot-password-form"
 
+// Force dynamic rendering for authentication flow
+export const dynamic = 'force-dynamic'
+
 export default function ForgotPasswordPage() {
   return (
     <div className="container flex h-screen w-screen flex-col items-center justify-center">

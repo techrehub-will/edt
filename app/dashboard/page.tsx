@@ -4,6 +4,9 @@ import { DashboardCards } from "@/components/dashboard/cards"
 import { RecentActivity } from "@/components/dashboard/recent-activity"
 import { GoalProgress } from "@/components/dashboard/goal-progress"
 
+// Force dynamic rendering since this page uses server-side authentication
+export const dynamic = 'force-dynamic'
+
 export default async function DashboardPage() {
   const supabase = await createServerClient()
 

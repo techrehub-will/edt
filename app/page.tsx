@@ -1,6 +1,9 @@
 import LandingPage from "@/components/landing-page"
 import { Metadata } from "next"
 
+// Force dynamic rendering to avoid webpack runtime issues during static generation
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: "Engineering Development Tracker - Track Your Technical Growth & Career Progress",
   description: "Accelerate your engineering career with comprehensive project tracking, goal management, and professional development analytics. Join thousands of engineers advancing their careers with EDT.",

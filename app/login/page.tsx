@@ -3,6 +3,9 @@ import { createServerClient } from "@/lib/supabase-server"
 import { LoginForm } from "@/components/auth/login-form"
 import { Metadata } from "next"
 
+// Force dynamic rendering since this page uses server-side authentication
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: "Sign In - Engineering Development Tracker",
   description:
