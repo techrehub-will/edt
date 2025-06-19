@@ -12,7 +12,7 @@ import { Eye, EyeOff, Loader2, Key } from "lucide-react"
 export function PasswordChangeForm() {
   const { supabase } = useSupabase()
   const { toast } = useToast()
-  
+
   const [currentPassword, setCurrentPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
@@ -42,7 +42,7 @@ export function PasswordChangeForm() {
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!currentPassword || !newPassword || !confirmPassword) {
       toast({
         title: "Error",
@@ -81,7 +81,7 @@ export function PasswordChangeForm() {
     }
 
     setIsChanging(true)
-    
+
     try {
       // First verify current password by attempting to sign in
       const { data: user } = await supabase.auth.getUser()
@@ -121,7 +121,7 @@ export function PasswordChangeForm() {
         true,
         'Current session',
         navigator.userAgent,
-        { 
+        {
           timestamp: new Date().toISOString(),
           method: 'settings_form'
         }
@@ -137,7 +137,7 @@ export function PasswordChangeForm() {
       setCurrentPassword("")
       setNewPassword("")
       setConfirmPassword("")
-      
+
     } catch (error) {
       console.error("Error changing password:", error)
       toast({

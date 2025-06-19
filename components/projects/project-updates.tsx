@@ -9,10 +9,10 @@ import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { 
-  Plus, 
-  MessageSquare, 
-  FileText, 
+import {
+  Plus,
+  MessageSquare,
+  FileText,
   Calendar,
   AlertCircle,
   CheckCircle,
@@ -57,7 +57,7 @@ export function ProjectUpdates({ projectId, updates, onUpdatesChange }: ProjectU
     content: "",
     attachments: [] as string[]
   })
-  
+
   const supabase = createClientComponentClient()
   const { toast } = useToast()
 
@@ -93,7 +93,7 @@ export function ProjectUpdates({ projectId, updates, onUpdatesChange }: ProjectU
 
       // Update the local state
       onUpdatesChange([data, ...updates])
-      
+
       // Reset form
       setNewUpdate({
         update_type: "note",
@@ -102,7 +102,7 @@ export function ProjectUpdates({ projectId, updates, onUpdatesChange }: ProjectU
         attachments: []
       })
       setIsAddUpdateOpen(false)
-      
+
       toast({
         title: "Success",
         description: "Update added successfully"
@@ -132,7 +132,7 @@ export function ProjectUpdates({ projectId, updates, onUpdatesChange }: ProjectU
 
       // Update local state
       onUpdatesChange(updates.filter(update => update.id !== updateId))
-      
+
       toast({
         title: "Success",
         description: "Update deleted successfully"
@@ -231,8 +231,8 @@ export function ProjectUpdates({ projectId, updates, onUpdatesChange }: ProjectU
                 </div>
               </div>
               <DialogFooter>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => setIsAddUpdateOpen(false)}
                   disabled={isLoading}
                 >
@@ -263,8 +263,8 @@ export function ProjectUpdates({ projectId, updates, onUpdatesChange }: ProjectU
               <div key={update.id} className="border rounded-lg p-4">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    <Badge 
-                      variant="outline" 
+                    <Badge
+                      variant="outline"
                       className={`${getUpdateTypeColor(update.update_type)} text-white border-0`}
                     >
                       <div className="flex items-center gap-1">
@@ -285,13 +285,13 @@ export function ProjectUpdates({ projectId, updates, onUpdatesChange }: ProjectU
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
-                
+
                 {update.title && (
                   <h4 className="font-semibold mb-2">{update.title}</h4>
                 )}
-                
+
                 <p className="text-muted-foreground whitespace-pre-wrap">{update.content}</p>
-                
+
                 {update.attachments && update.attachments.length > 0 && (
                   <div className="mt-3">
                     <p className="text-sm font-medium mb-2">Attachments:</p>

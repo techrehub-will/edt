@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation"
 import { BarChart3, FileText, Home, LightbulbIcon, Target, Zap, Brain, Menu, X, User, Settings, MessageCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useState } from "react"
+import Image from "next/image"
 
 export default function Sidebar() {
   const pathname = usePathname()
@@ -40,7 +41,7 @@ export default function Sidebar() {
       icon: BarChart3,
       href: "/dashboard/analytics",
       active: pathname === "/dashboard/analytics",
-    },    {
+    }, {
       label: "AI Insights",
       icon: Brain,
       href: "/dashboard/ai-insights",
@@ -58,12 +59,12 @@ export default function Sidebar() {
     //   href: "/dashboard/integrations",
     //   active: pathname === "/dashboard/integrations",
     // },   
-     {
+    {
       label: "Reports",
       icon: FileText,
       href: "/dashboard/reports",
       active: pathname === "/dashboard/reports",
-    },    {
+    }, {
       label: "Profile",
       icon: User,
       href: "/dashboard/profile",
@@ -114,7 +115,7 @@ export default function Sidebar() {
         <div className="flex h-16 items-center border-b px-6">
           <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
             <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
-              EDT
+              <Image src="/icons/icon-32x32.png" alt="EDT Logo" width={28} height={28} />
             </div>
             <span className="text-lg font-bold">Development Tracker</span>
           </Link>
@@ -150,7 +151,7 @@ export default function Sidebar() {
         <div className="flex h-16 items-center border-b px-6 pt-4">
           <Link href="/dashboard" className="flex items-center gap-2 font-semibold" onClick={closeMobileMenu}>
             <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
-              EDT
+              <Image src="/icons/icon-32x32.png" alt="EDT Logo" width={28} height={28} />
             </div>
             <span className="text-lg font-bold">Development Tracker</span>
           </Link>

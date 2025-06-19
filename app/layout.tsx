@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     'developer productivity tools'
   ],
   authors: [
-    { 
+    {
       name: 'EDT Team',
       url: 'https://edt.vercel.app'
     }
@@ -52,7 +52,14 @@ export const metadata: Metadata = {
     icon: [
       { url: '/icons/icon-16x16.png', sizes: '16x16', type: 'image/png' },
       { url: '/icons/icon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/icons/icon-72x72.png', sizes: '72x72', type: 'image/png' },
+      { url: '/icons/icon-96x96.png', sizes: '96x96', type: 'image/png' },
+      { url: '/icons/icon-128x128.png', sizes: '128x128', type: 'image/png' },
+      { url: '/icons/icon-144x144.png', sizes: '144x144', type: 'image/png' },
+      { url: '/icons/icon-152x152.png', sizes: '152x152', type: 'image/png' },
+      { url: '/icons/icon-180x180.png', sizes: '180x180', type: 'image/png' },
       { url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icons/icon-384x384.png', sizes: '384x384', type: 'image/png' },
       { url: '/icons/icon-512x512.png', sizes: '512x512', type: 'image/png' }
     ],
     shortcut: '/icons/icon-32x32.png',
@@ -149,20 +156,20 @@ export default function RootLayout({
         <meta name="referrer" content="strict-origin-when-cross-origin" />
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
         <meta name="HandheldFriendly" content="true" />
-        
+
         {/* Favicon and Icons */}
         <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16x16.png" />
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
         <link rel="mask-icon" href="/icons/icon-base.svg" color="#000000" />
-        
+
         {/* Preconnect for performance */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="//fonts.googleapis.com" />
-        <link rel="dns-prefetch" href="//fonts.gstatic.com" />        
+        <link rel="dns-prefetch" href="//fonts.gstatic.com" />
         {/* Structured Data */}
-        <script 
+        <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
@@ -197,16 +204,16 @@ export default function RootLayout({
         <meta name="msvalidate.01" content="CEDC65F3D2DA389E6CDCCF3BEA1898BE" />
         <meta name="yandex-verification" content="0c963589a54adf2e" />
       </head>      <body className={inter.className} suppressHydrationWarning>        <SupabaseProvider>
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            {/* <AuthEventTracker /> */}
-            <PWALifecycle />
-            {children}
-            <PWAInstallPrompt />
-            <Toaster />
-            <Analytics />
-            <SpeedInsights />
-          </ThemeProvider>
-        </SupabaseProvider>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          {/* <AuthEventTracker /> */}
+          <PWALifecycle />
+          {children}
+          <PWAInstallPrompt />
+          <Toaster />
+          <Analytics />
+          <SpeedInsights />
+        </ThemeProvider>
+      </SupabaseProvider>
       </body>
     </html>
   )

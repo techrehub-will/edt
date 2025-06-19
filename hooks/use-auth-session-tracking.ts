@@ -12,13 +12,13 @@ export function useAuthSessionTracking() {
         if (event === 'SIGNED_IN' && session) {
           // User signed in, create session
           const sessionToken = session.access_token || `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-          
+
           await sessionManager.createSession(
             sessionToken,
             navigator.userAgent,
             'Current session' // In production, you'd get real IP
           )
-          
+
           // Log sign-in activity
           await sessionManager.logSecurityActivity(
             'sign_in',

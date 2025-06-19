@@ -13,11 +13,11 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { 
-  Plus, 
-  Calendar as CalendarIcon, 
-  CheckCircle, 
-  Clock, 
+import {
+  Plus,
+  Calendar as CalendarIcon,
+  CheckCircle,
+  Clock,
   AlertTriangle,
   Edit,
   Trash2,
@@ -85,7 +85,7 @@ export function ProjectDetails({ project, onUpdate }: ProjectDetailsProps) {
   const [isAddingTask, setIsAddingTask] = useState(false)
   const [isAddingUpdate, setIsAddingUpdate] = useState(false)
   const [selectedDate, setSelectedDate] = useState<Date>()
-  
+
   const supabase = createClientComponentClient()
   const { toast } = useToast()
 
@@ -150,7 +150,7 @@ export function ProjectDetails({ project, onUpdate }: ProjectDetailsProps) {
   const handleAddUpdate = async (updateData: Partial<ProjectUpdate>) => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
-      
+
       const { data, error } = await supabase
         .from("project_updates")
         .insert({
@@ -188,17 +188,17 @@ export function ProjectDetails({ project, onUpdate }: ProjectDetailsProps) {
 
       if (error) throw error
 
-      setTasks(tasks.map(task => 
+      setTasks(tasks.map(task =>
         task.id === taskId ? { ...task, status: newStatus } : task
       ))
 
       // Update project progress based on completed tasks
-      const updatedTasks = tasks.map(task => 
+      const updatedTasks = tasks.map(task =>
         task.id === taskId ? { ...task, status: newStatus } : task
       )
       const completedTasks = updatedTasks.filter(task => task.status === "completed").length
       const progressPercentage = Math.round((completedTasks / updatedTasks.length) * 100)
-      
+
       onUpdate({ progress_percentage: progressPercentage })
     } catch (error) {
       console.error("Error updating task:", error)
@@ -331,7 +331,7 @@ export function ProjectDetails({ project, onUpdate }: ProjectDetailsProps) {
                 </CardContent>
               </Card>
             ))}
-            
+
             {milestones.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
                 <Target className="h-8 w-8 mx-auto mb-2 opacity-50" />
@@ -368,7 +368,7 @@ export function ProjectDetails({ project, onUpdate }: ProjectDetailsProps) {
                     <div className="flex items-start gap-3 flex-1">
                       <button
                         onClick={() => updateTaskStatus(
-                          task.id, 
+                          task.id,
                           task.status === "completed" ? "todo" : "completed"
                         )}
                         className="mt-1"
@@ -402,7 +402,7 @@ export function ProjectDetails({ project, onUpdate }: ProjectDetailsProps) {
                 </CardContent>
               </Card>
             ))}
-            
+
             {tasks.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
                 <CheckCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
@@ -455,7 +455,7 @@ export function ProjectDetails({ project, onUpdate }: ProjectDetailsProps) {
                 </CardContent>
               </Card>
             ))}
-              {updates.length === 0 && (
+            {updates.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
                 <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
                 <p>No updates yet. Share progress and notes about this project.</p>

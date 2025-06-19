@@ -41,7 +41,7 @@ export default function SettingsPage() {
       }
 
       const { data: { user }, error: authError } = await supabase.auth.getUser()
-      
+
       if (authError || !user) {
         router.push("/login")
         return
@@ -98,12 +98,12 @@ export default function SettingsPage() {
 
       // Sign out and redirect
       await supabase.auth.signOut()
-      
+
       toast({
         title: "Account Deleted",
         description: "Your account has been deleted successfully",
       })
-      
+
       router.push("/")
     } catch (error) {
       console.error("Error deleting account:", error)
@@ -173,26 +173,26 @@ export default function SettingsPage() {
                 </div>
                 <div>
                   <Label>Account Created</Label>
-                  <Input 
-                    value={user?.created_at ? new Date(user.created_at).toLocaleDateString() : ""} 
-                    readOnly 
+                  <Input
+                    value={user?.created_at ? new Date(user.created_at).toLocaleDateString() : ""}
+                    readOnly
                   />
                 </div>
                 <div>
                   <Label>Last Sign In</Label>
-                  <Input 
-                    value={user?.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString() : ""} 
-                    readOnly 
+                  <Input
+                    value={user?.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString() : ""}
+                    readOnly
                   />
                 </div>
               </div>
-              
+
               {user?.user_metadata && Object.keys(user.user_metadata).length > 0 && (
                 <div>
                   <Label>Metadata</Label>
-                  <Textarea 
-                    value={JSON.stringify(user.user_metadata, null, 2)} 
-                    readOnly 
+                  <Textarea
+                    value={JSON.stringify(user.user_metadata, null, 2)}
+                    readOnly
                     rows={6}
                     className="font-mono text-sm"
                   />
@@ -202,9 +202,9 @@ export default function SettingsPage() {
               {userProfile && (
                 <div>
                   <Label>Profile Data</Label>
-                  <Textarea 
-                    value={JSON.stringify(userProfile, null, 2)} 
-                    readOnly 
+                  <Textarea
+                    value={JSON.stringify(userProfile, null, 2)}
+                    readOnly
                     rows={8}
                     className="font-mono text-sm"
                   />
@@ -240,7 +240,7 @@ export default function SettingsPage() {
                     )}
                   </div>
                 </div>
-                
+
                 <div>
                   <Label>Authentication Provider</Label>
                   <div className="flex items-center gap-2 mt-2">
@@ -308,7 +308,7 @@ export default function SettingsPage() {
                 <p className="text-sm text-muted-foreground mb-4">
                   Permanently delete your account and all associated data. This action cannot be undone.
                 </p>
-                
+
                 <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
                   <DialogTrigger asChild>
                     <Button variant="destructive">
@@ -329,7 +329,7 @@ export default function SettingsPage() {
                         </ul>
                       </DialogDescription>
                     </DialogHeader>
-                    
+
                     <div className="space-y-4">
                       <div>
                         <Label htmlFor="delete-confirmation">
@@ -344,17 +344,17 @@ export default function SettingsPage() {
                         />
                       </div>
                     </div>
-                    
+
                     <DialogFooter>
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         onClick={() => setIsDeleteDialogOpen(false)}
                         disabled={isDeleting}
                       >
                         Cancel
                       </Button>
-                      <Button 
-                        variant="destructive" 
+                      <Button
+                        variant="destructive"
                         onClick={handleDeleteAccount}
                         disabled={isDeleting || deleteConfirmation !== "DELETE MY ACCOUNT"}
                       >

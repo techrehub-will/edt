@@ -33,7 +33,7 @@ export function SupabaseProvider({ children }: { children: React.ReactNode }) {
           setError("Demo Mode - Database not connected")
           setIsConnected(false)
           return
-        }        setIsConnected(true)
+        } setIsConnected(true)
         setError(null)
 
         // Initialize auth event tracking for sessions

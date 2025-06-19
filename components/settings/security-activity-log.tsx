@@ -22,7 +22,7 @@ export function SecurityActivityLog() {
   const [error, setError] = useState<string | null>(null)
 
   let supabase: any = null
-  
+
   try {
     const context = useSupabase()
     supabase = context.supabase
@@ -91,7 +91,7 @@ export function SecurityActivityLog() {
   }
   const getActivityVariant = (activityType: string, success: boolean): "default" | "secondary" | "destructive" | "outline" => {
     if (!success) return 'destructive'
-    
+
     switch (activityType) {
       case 'login':
       case 'sign_in':
@@ -114,7 +114,7 @@ export function SecurityActivityLog() {
 
   const getBrowserInfo = (userAgent?: string) => {
     if (!userAgent) return 'Unknown Browser'
-      const ua = userAgent.toLowerCase()
+    const ua = userAgent.toLowerCase()
     if (ua.includes('chrome')) return 'Chrome'
     if (ua.includes('firefox')) return 'Firefox'
     if (ua.includes('safari') && !ua.includes('chrome')) return 'Safari'
@@ -199,7 +199,7 @@ export function SecurityActivityLog() {
     <div className="space-y-3">
       {activities.map((activity) => {
         if (!activity || !activity.id) return null
-        
+
         return (
           <div
             key={activity.id}
@@ -208,7 +208,7 @@ export function SecurityActivityLog() {
             <div className="mt-1">
               {getActivityIcon(activity.activity_type)}
             </div>
-            
+
             <div className="flex-1 space-y-1">
               <div className="flex items-center gap-2">
                 <span className="font-medium">
@@ -218,10 +218,10 @@ export function SecurityActivityLog() {
                   {activity.success ? 'Success' : 'Failed'}
                 </Badge>
               </div>
-              
+
               <div className="flex items-center gap-4 text-xs text-muted-foreground">
                 <span>
-                  {activity.timestamp && !isNaN(new Date(activity.timestamp).getTime()) 
+                  {activity.timestamp && !isNaN(new Date(activity.timestamp).getTime())
                     ? formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })
                     : 'Unknown time'
                   }
@@ -233,7 +233,7 @@ export function SecurityActivityLog() {
                   <span>{getBrowserInfo(activity.user_agent)}</span>
                 )}
               </div>
-              
+
               {activity.details && typeof activity.details === 'object' && Object.keys(activity.details).length > 0 && (
                 <div className="text-xs text-muted-foreground">
                   {JSON.stringify(activity.details, null, 2)}
@@ -243,7 +243,7 @@ export function SecurityActivityLog() {
           </div>
         )
       })}
-      
+
       <div className="text-center pt-4">
         <p className="text-xs text-muted-foreground">
           Showing recent security activity. Activities are retained for 90 days.

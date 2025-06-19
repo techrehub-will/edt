@@ -10,7 +10,7 @@ export class AuthEventTracker {
     // Listen for auth state changes
     this.supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth event:', event, session?.user?.id)
-      
+
       if (event === 'SIGNED_IN' && session) {
         // Create session when user signs in
         await this.handleSignIn(session)
@@ -54,8 +54,8 @@ export class AuthEventTracker {
 
       await this.supabase
         .from('user_sessions')
-        .update({ 
-          last_activity: new Date().toISOString() 
+        .update({
+          last_activity: new Date().toISOString()
         })
         .eq('user_id', user.user.id)
         .eq('session_token', session.access_token)

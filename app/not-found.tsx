@@ -46,7 +46,7 @@ export default function NotFound() {
                   </Button>
                 </Link>
               </div>
-              
+
               <div className="pt-4 border-t">
                 <p className="text-sm text-muted-foreground mb-3">
                   Popular pages:

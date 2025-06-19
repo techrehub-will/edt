@@ -10,12 +10,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/hooks/use-toast"
 import { useSupabase } from "@/lib/supabase-provider"
-import { 
-  ArrowLeft, 
-  Edit, 
-  Calendar, 
-  Target, 
-  Users, 
+import {
+  ArrowLeft,
+  Edit,
+  Calendar,
+  Target,
+  Users,
   DollarSign,
   Clock,
   AlertTriangle,
@@ -122,7 +122,8 @@ const priorityColors = {
   "Critical": "bg-red-500"
 }
 
-export default function ProjectViewerPage() {  const params = useParams()
+export default function ProjectViewerPage() {
+  const params = useParams()
   const router = useRouter()
   const { toast } = useToast()
   const { supabase, isConnected } = useSupabase()
@@ -133,7 +134,7 @@ export default function ProjectViewerPage() {  const params = useParams()
   const [updates, setUpdates] = useState<ProjectUpdate[]>([])
   const [attachments, setAttachments] = useState<any[]>([])
   const [activeTab, setActiveTab] = useState("overview")
-  
+
   // Add milestone/task dialog states
   const [addMilestoneOpen, setAddMilestoneOpen] = useState(false)
   const [addTaskOpen, setAddTaskOpen] = useState(false)
@@ -302,14 +303,14 @@ export default function ProjectViewerPage() {  const params = useParams()
 
   const calculateTimelineProgress = () => {
     if (!project?.start_date || !project?.target_completion_date) return 0
-    
+
     const start = new Date(project.start_date)
     const target = new Date(project.target_completion_date)
     const now = new Date()
-    
+
     const total = target.getTime() - start.getTime()
     const elapsed = now.getTime() - start.getTime()
-    
+
     return Math.min(100, Math.max(0, (elapsed / total) * 100))
   }
 
@@ -413,7 +414,7 @@ export default function ProjectViewerPage() {  const params = useParams()
         if (error.message.includes('uuid') || error.message.includes('assigned_to')) {
           console.log('Retrying with assigned_to as null due to UUID constraint')
           const retryTaskData = { ...taskData, assigned_to: null }
-          
+
           const { data: retryData, error: retryError } = await supabase
             .from("project_tasks")
             .insert(retryTaskData)
@@ -479,8 +480,8 @@ export default function ProjectViewerPage() {  const params = useParams()
 
       if (error) throw error
 
-      setMilestones(milestones.map(milestone => 
-        milestone.id === milestoneId 
+      setMilestones(milestones.map(milestone =>
+        milestone.id === milestoneId
           ? { ...milestone, ...updateData }
           : milestone
       ))
@@ -515,8 +516,8 @@ export default function ProjectViewerPage() {  const params = useParams()
 
       if (error) throw error
 
-      setTasks(tasks.map(task => 
-        task.id === taskId 
+      setTasks(tasks.map(task =>
+        task.id === taskId
           ? { ...task, ...updateData }
           : task
       ))
@@ -606,62 +607,62 @@ export default function ProjectViewerPage() {  const params = useParams()
                 heading: HeadingLevel.TITLE,
                 alignment: AlignmentType.CENTER,
               }),
-              
+
               // Project Details Section
               new Paragraph({
                 text: "Project Overview",
                 heading: HeadingLevel.HEADING_1,
               }),
-              
+
               new Paragraph({
                 children: [
                   new TextRun({ text: "System: ", bold: true }),
                   new TextRun({ text: project.system }),
                 ],
               }),
-              
+
               new Paragraph({
                 children: [
                   new TextRun({ text: "Status: ", bold: true }),
                   new TextRun({ text: project.status.replace("_", " ").toUpperCase() }),
                 ],
               }),
-              
+
               new Paragraph({
                 children: [
                   new TextRun({ text: "Priority: ", bold: true }),
                   new TextRun({ text: project.priority }),
                 ],
               }),
-              
+
               new Paragraph({
                 children: [
                   new TextRun({ text: "Progress: ", bold: true }),
                   new TextRun({ text: `${project.progress_percentage}%` }),
                 ],
               }),
-              
+
               new Paragraph({
                 children: [
                   new TextRun({ text: "Timeline: ", bold: true }),
                   new TextRun({ text: project.timeline }),
                 ],
               }),
-              
+
               new Paragraph({ text: "" }), // Empty line
-              
+
               new Paragraph({
                 children: [
                   new TextRun({ text: "Objective: ", bold: true }),
                 ],
               }),
-              
+
               new Paragraph({
                 text: project.objective,
               }),
-              
+
               new Paragraph({ text: "" }), // Empty line
-              
+
               // Dates section
               new Paragraph({
                 children: [
@@ -669,14 +670,14 @@ export default function ProjectViewerPage() {  const params = useParams()
                   new TextRun({ text: formatDate(project.start_date) }),
                 ],
               }),
-              
+
               new Paragraph({
                 children: [
                   new TextRun({ text: "Target Completion: ", bold: true }),
                   new TextRun({ text: formatDate(project.target_completion_date) }),
                 ],
               }),
-              
+
               ...(project.actual_completion_date ? [
                 new Paragraph({
                   children: [
@@ -685,16 +686,16 @@ export default function ProjectViewerPage() {  const params = useParams()
                   ],
                 }),
               ] : []),
-              
+
               new Paragraph({ text: "" }), // Empty line
-              
+
               // Budget section
               ...(project.budget_estimated || project.budget_actual ? [
                 new Paragraph({
                   text: "Budget Information",
                   heading: HeadingLevel.HEADING_2,
                 }),
-                
+
                 ...(project.budget_estimated ? [
                   new Paragraph({
                     children: [
@@ -703,7 +704,7 @@ export default function ProjectViewerPage() {  const params = useParams()
                     ],
                   }),
                 ] : []),
-                
+
                 ...(project.budget_actual ? [
                   new Paragraph({
                     children: [
@@ -712,102 +713,103 @@ export default function ProjectViewerPage() {  const params = useParams()
                     ],
                   }),
                 ] : []),
-                
+
                 new Paragraph({ text: "" }), // Empty line
               ] : []),
-              
+
               // Team section
               ...(project.assigned_to && project.assigned_to.length > 0 ? [
                 new Paragraph({
                   text: "Team Members",
                   heading: HeadingLevel.HEADING_2,
                 }),
-                
-                ...project.assigned_to.map(person => 
+
+                ...project.assigned_to.map(person =>
                   new Paragraph({
                     text: `• ${person}`,
                   })
                 ),
-                
+
                 new Paragraph({ text: "" }), // Empty line
               ] : []),
-              
+
               // Tags section
               ...(project.tags && project.tags.length > 0 ? [
                 new Paragraph({
                   text: "Tags",
                   heading: HeadingLevel.HEADING_2,
                 }),
-                
+
                 new Paragraph({
                   text: project.tags.join(", "),
                 }),
-                
+
                 new Paragraph({ text: "" }), // Empty line
               ] : []),
-              
+
               // Success Criteria section
               ...(project.success_criteria && project.success_criteria.length > 0 ? [
                 new Paragraph({
                   text: "Success Criteria",
                   heading: HeadingLevel.HEADING_2,
                 }),
-                
-                ...project.success_criteria.map(criteria => 
+
+                ...project.success_criteria.map(criteria =>
                   new Paragraph({
                     text: `• ${criteria}`,
                   })
                 ),
-                
+
                 new Paragraph({ text: "" }), // Empty line
               ] : []),
-              
+
               // Risks section
               ...(project.risks && project.risks.length > 0 ? [
                 new Paragraph({
                   text: "Risks",
                   heading: HeadingLevel.HEADING_2,
                 }),
-                
-                ...project.risks.map(risk => 
+
+                ...project.risks.map(risk =>
                   new Paragraph({
                     text: `• ${risk}`,
                   })
                 ),
-                
+
                 new Paragraph({ text: "" }), // Empty line
               ] : []),
-              
+
               // Dependencies section
               ...(project.dependencies && project.dependencies.length > 0 ? [
                 new Paragraph({
                   text: "Dependencies",
                   heading: HeadingLevel.HEADING_2,
                 }),
-                
-                ...project.dependencies.map(dependency => 
+
+                ...project.dependencies.map(dependency =>
                   new Paragraph({
                     text: `• ${dependency}`,
                   })
                 ),
-                
+
                 new Paragraph({ text: "" }), // Empty line
               ] : []),
-              
+
               // Milestones section
               ...(milestones.length > 0 ? [
                 new Paragraph({
                   text: "Milestones",
                   heading: HeadingLevel.HEADING_1,
                 }),
-                
+
                 new Table({
                   width: {
                     size: 100,
                     type: WidthType.PERCENTAGE,
                   },
                   rows: [
-                    new TableRow({                      children: [
+                    new TableRow({
+                      children: [
                         new TableCell({
                           children: [new Paragraph({ children: [new TextRun({ text: "Title", bold: true })] })],
                         }),
@@ -842,37 +844,37 @@ export default function ProjectViewerPage() {  const params = useParams()
                     ),
                   ],
                 }),
-                
+
                 new Paragraph({ text: "" }), // Empty line
               ] : []),
-              
+
               // Timeline/Gantt Chart Section
               ...(milestones.length > 0 || tasks.length > 0 ? [
                 new Paragraph({
                   text: "Project Timeline",
                   heading: HeadingLevel.HEADING_1,
                 }),
-                
+
                 new Paragraph({
                   children: [
                     new TextRun({ text: "Project Timeline Overview", bold: true }),
                   ],
                 }),
-                
+
                 new Paragraph({
                   children: [
                     new TextRun({ text: "Start Date: ", bold: true }),
                     new TextRun({ text: formatDate(project.start_date) }),
                   ],
                 }),
-                
+
                 new Paragraph({
                   children: [
                     new TextRun({ text: "Target Completion: ", bold: true }),
                     new TextRun({ text: formatDate(project.target_completion_date) }),
                   ],
                 }),
-                
+
                 ...(project.actual_completion_date ? [
                   new Paragraph({
                     children: [
@@ -881,9 +883,9 @@ export default function ProjectViewerPage() {  const params = useParams()
                     ],
                   }),
                 ] : []),
-                
+
                 new Paragraph({ text: "" }), // Empty line
-                
+
                 // Timeline Table
                 new Table({
                   width: {
@@ -956,7 +958,7 @@ export default function ProjectViewerPage() {  const params = useParams()
                     ),
                   ],
                 }),
-                
+
                 new Paragraph({ text: "" }), // Empty line
               ] : []),
 
@@ -966,14 +968,15 @@ export default function ProjectViewerPage() {  const params = useParams()
                   text: "Tasks",
                   heading: HeadingLevel.HEADING_1,
                 }),
-                
+
                 new Table({
                   width: {
                     size: 100,
                     type: WidthType.PERCENTAGE,
                   },
                   rows: [
-                    new TableRow({                      children: [
+                    new TableRow({
+                      children: [
                         new TableCell({
                           children: [new Paragraph({ children: [new TextRun({ text: "Title", bold: true })] })],
                         }),
@@ -1014,24 +1017,24 @@ export default function ProjectViewerPage() {  const params = useParams()
                     ),
                   ],
                 }),
-                
+
                 new Paragraph({ text: "" }), // Empty line
               ] : []),
-              
+
               // Results section
               ...(project.results ? [
                 new Paragraph({
                   text: "Results",
                   heading: HeadingLevel.HEADING_1,
                 }),
-                
+
                 new Paragraph({
                   text: project.results,
                 }),
-                
+
                 new Paragraph({ text: "" }), // Empty line
               ] : []),
-              
+
               // Footer
               new Paragraph({
                 children: [
@@ -1047,7 +1050,7 @@ export default function ProjectViewerPage() {  const params = useParams()
 
       const buffer = await Packer.toBuffer(doc)
       const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" })
-      
+
       const url = window.URL.createObjectURL(blob)
       const link = document.createElement("a")
       link.href = url
@@ -1067,7 +1070,8 @@ export default function ProjectViewerPage() {  const params = useParams()
         title: "Error",
         description: "Failed to export project to DOCX.",
         variant: "destructive",
-      })    } finally {
+      })
+    } finally {
       setExporting(false)
     }
   }
@@ -1079,34 +1083,34 @@ export default function ProjectViewerPage() {  const params = useParams()
     setExporting(true)
     try {
       const jsPDF = (await import("jspdf")).default
-      
+
       const doc = new jsPDF()
-      
+
       // Title
       doc.setFontSize(20)
       doc.text(project.title + " - Timeline", 20, 20)
-      
+
       // Project info
       doc.setFontSize(12)
       doc.text("System: " + project.system, 20, 35)
       doc.text("Start Date: " + formatDate(project.start_date), 20, 45)
       doc.text("Target Completion: " + formatDate(project.target_completion_date), 20, 55)
-      
+
       // Timeline data
       let yPosition = 75
-      
+
       // Milestones section
       if (milestones.length > 0) {
         doc.setFontSize(16)
         doc.text("Milestones", 20, yPosition)
         yPosition += 15
-        
+
         doc.setFontSize(10)
         milestones.forEach((milestone, index) => {
           const status = milestone.status.replace("_", " ").toUpperCase()
           const targetDate = formatDate(milestone.target_date)
           const completionDate = milestone.completion_date ? formatDate(milestone.completion_date) : "Not completed"
-          
+
           doc.text(`${index + 1}. ${milestone.title}`, 25, yPosition)
           yPosition += 7
           doc.text(`   Status: ${status} | Target: ${targetDate} | Completed: ${completionDate}`, 25, yPosition)
@@ -1114,24 +1118,24 @@ export default function ProjectViewerPage() {  const params = useParams()
         })
         yPosition += 10
       }
-      
+
       // Tasks section
       if (tasks.length > 0) {
         doc.setFontSize(16)
         doc.text("Tasks", 20, yPosition)
         yPosition += 15
-        
+
         doc.setFontSize(10)
         tasks.forEach((task, index) => {
           if (yPosition > 280) { // Create new page if needed
             doc.addPage()
             yPosition = 20
           }
-          
+
           const status = task.status.replace("_", " ").toUpperCase()
           const dueDate = task.due_date ? formatDate(task.due_date) : "No due date"
           const completionDate = task.completion_date ? formatDate(task.completion_date) : "Not completed"
-          
+
           doc.text(`${index + 1}. ${task.title}`, 25, yPosition)
           yPosition += 7
           doc.text(`   Status: ${status} | Priority: ${task.priority} | Due: ${dueDate}`, 25, yPosition)
@@ -1140,7 +1144,7 @@ export default function ProjectViewerPage() {  const params = useParams()
           yPosition += 12
         })
       }
-      
+
       // Footer
       const pageCount = doc.getNumberOfPages()
       for (let i = 1; i <= pageCount; i++) {
@@ -1148,7 +1152,7 @@ export default function ProjectViewerPage() {  const params = useParams()
         doc.setFontSize(8)
         doc.text(`Generated on ${format(new Date(), "PPP")} - Page ${i} of ${pageCount}`, 20, 290)
       }
-      
+
       doc.save(`${project.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_timeline.pdf`)
 
       toast({
@@ -1206,8 +1210,8 @@ export default function ProjectViewerPage() {  const params = useParams()
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             size="sm"
             onClick={() => router.push("/dashboard/projects")}
           >
@@ -1219,20 +1223,20 @@ export default function ProjectViewerPage() {  const params = useParams()
             <p className="text-muted-foreground">{project.system}</p>
           </div>
         </div>        <div className="flex items-center gap-2">
-          <Badge 
+          <Badge
             className={`${getStatusColor(project.status)} text-white`}
           >
             {project.status.replace("_", " ").toUpperCase()}
           </Badge>
-          <Badge 
+          <Badge
             className={`${getPriorityColor(project.priority)} text-white`}
           >
             {project.priority} Priority
           </Badge>          <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 disabled={exporting}
               >
                 {exporting ? (
@@ -1258,7 +1262,7 @@ export default function ProjectViewerPage() {  const params = useParams()
                 Timeline Chart (PDF)
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 onClick={() => {
                   // Scroll to timeline tab and switch to it
                   setActiveTab("timeline")
@@ -1296,7 +1300,7 @@ export default function ProjectViewerPage() {  const params = useParams()
             <Progress value={project.progress_percentage} className="mt-2" />
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Tasks</CardTitle>
@@ -1309,7 +1313,7 @@ export default function ProjectViewerPage() {  const params = useParams()
             </p>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Milestones</CardTitle>
@@ -1322,7 +1326,7 @@ export default function ProjectViewerPage() {  const params = useParams()
             </p>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Timeline</CardTitle>
@@ -1338,14 +1342,14 @@ export default function ProjectViewerPage() {  const params = useParams()
       </div>
 
       {/* Main Content */}      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="milestones">Milestones</TabsTrigger>
-          <TabsTrigger value="tasks">Tasks</TabsTrigger>
-          <TabsTrigger value="timeline">Timeline</TabsTrigger>
-          <TabsTrigger value="updates">Updates</TabsTrigger>
-          <TabsTrigger value="attachments">Attachments</TabsTrigger>
-          <TabsTrigger value="details">Details</TabsTrigger>
-        </TabsList>
+        <TabsTrigger value="overview">Overview</TabsTrigger>
+        <TabsTrigger value="milestones">Milestones</TabsTrigger>
+        <TabsTrigger value="tasks">Tasks</TabsTrigger>
+        <TabsTrigger value="timeline">Timeline</TabsTrigger>
+        <TabsTrigger value="updates">Updates</TabsTrigger>
+        <TabsTrigger value="attachments">Attachments</TabsTrigger>
+        <TabsTrigger value="details">Details</TabsTrigger>
+      </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
           <div className="grid gap-6 md:grid-cols-2">
@@ -1359,7 +1363,7 @@ export default function ProjectViewerPage() {  const params = useParams()
                   <h4 className="font-semibold mb-2">Objective</h4>
                   <p className="text-muted-foreground">{project.objective}</p>
                 </div>
-                
+
                 {project.results && (
                   <div>
                     <h4 className="font-semibold mb-2">Results</h4>
@@ -1635,7 +1639,7 @@ export default function ProjectViewerPage() {  const params = useParams()
                             onValueChange={(value) => handleUpdateMilestoneStatus(milestone.id, value)}
                           >
                             <SelectTrigger className="w-auto">
-                              <Badge 
+                              <Badge
                                 className={`${getStatusColor(milestone.status)} text-white border-0`}
                               >
                                 {milestone.status.replace("_", " ").toUpperCase()}
@@ -1819,7 +1823,7 @@ export default function ProjectViewerPage() {  const params = useParams()
                       <div className="flex items-center justify-between mb-2">
                         <h4 className="font-semibold">{task.title}</h4>
                         <div className="flex items-center gap-2">
-                          <Badge 
+                          <Badge
                             className={`${getPriorityColor(task.priority)} text-white`}
                           >
                             {task.priority}
@@ -1829,7 +1833,7 @@ export default function ProjectViewerPage() {  const params = useParams()
                             onValueChange={(value) => handleUpdateTaskStatus(task.id, value)}
                           >
                             <SelectTrigger className="w-auto">
-                              <Badge 
+                              <Badge
                                 className={`${getStatusColor(task.status)} text-white border-0`}
                               >
                                 {task.status.replace("_", " ").toUpperCase()}
@@ -1951,8 +1955,8 @@ export default function ProjectViewerPage() {  const params = useParams()
                   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {project.images.map((image, index) => (
                       <div key={index} className="border rounded-lg p-2">
-                        <img 
-                          src={image} 
+                        <img
+                          src={image}
                           alt={`Project image ${index + 1}`}
                           className="w-full h-32 object-cover rounded"
                         />

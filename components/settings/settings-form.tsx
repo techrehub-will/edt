@@ -25,9 +25,9 @@ interface UserSettings {
 export function SettingsForm() {
   const { supabase, isConnected } = useSupabase()
   const { toast } = useToast()
-    const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  
+
   const [settings, setSettings] = useState<UserSettings>({
     notifications_enabled: true,
     email_notifications: true,
@@ -102,7 +102,7 @@ export function SettingsForm() {
       } else if (Notification.permission === 'denied') {
         setSettings(prev => ({ ...prev, notifications_enabled: false }))
         toast({
-          title: "Notifications Blocked", 
+          title: "Notifications Blocked",
           description: "Notifications are blocked. Please enable them in your browser settings.",
           variant: "destructive"
         })
@@ -149,19 +149,19 @@ export function SettingsForm() {
 
       if (error) {
         throw error
-      }      if (!silent) {
+      } if (!silent) {
         toast({
           title: "Success",
           description: "Settings saved successfully.",
         })
-        
+
         // Log security activity for settings changes
         await sessionManager.logSecurityActivity(
           'settings_change',
           true,
           'Current session',
           navigator.userAgent,
-          { 
+          {
             timestamp: new Date().toISOString(),
             settings_updated: Object.keys(settings)
           }
@@ -183,7 +183,7 @@ export function SettingsForm() {
 
   const handleSettingChange = (key: keyof UserSettings, value: any) => {
     setSettings(prev => ({ ...prev, [key]: value }))
-    
+
     // Show immediate feedback for certain settings
     if (key === 'dark_mode') {
       toast({
@@ -191,7 +191,7 @@ export function SettingsForm() {
         description: "Theme has been applied immediately.",
       })
     }
-    
+
     if (key === 'notifications_enabled' && value) {
       toast({
         title: "Notifications Enabled",
@@ -202,7 +202,7 @@ export function SettingsForm() {
     if (key === 'ai_insights_enabled') {
       toast({
         title: value ? "AI Insights Enabled" : "AI Insights Disabled",
-        description: value 
+        description: value
           ? "AI-powered analysis and recommendations are now active."
           : "AI features have been disabled.",
       })
@@ -377,39 +377,39 @@ export function SettingsForm() {
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">            <div className="space-y-2">
-              <Label htmlFor="timezone">Timezone</Label>              <Select
-                value={settings.timezone}
-                onValueChange={(value) => handleSettingChange('timezone', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select timezone" />
-                </SelectTrigger>                <SelectContent>
-                  <SelectItem value="Africa/Harare">Harare, Zimbabwe (GMT+2)</SelectItem>
-                  <SelectItem value="Africa/Cairo">Cairo, Egypt (GMT+2)</SelectItem>
-                  <SelectItem value="Africa/Johannesburg">Johannesburg, South Africa (GMT+2)</SelectItem>
-                  <SelectItem value="Europe/Berlin">Berlin, Germany (GMT+1/+2)</SelectItem>
-                  <SelectItem value="Europe/Paris">Paris, France (GMT+1/+2)</SelectItem>
-                  <SelectItem value="Europe/London">London, UK (GMT/+1)</SelectItem>
-                  <SelectItem value="UTC">UTC (GMT+0)</SelectItem>
-                  <SelectItem value="America/New_York">Eastern Time (GMT-5/-4)</SelectItem>
-                  <SelectItem value="America/Chicago">Central Time (GMT-6/-5)</SelectItem>
-                  <SelectItem value="America/Denver">Mountain Time (GMT-7/-6)</SelectItem>
-                  <SelectItem value="America/Los_Angeles">Pacific Time (GMT-8/-7)</SelectItem>
-                  <SelectItem value="Asia/Dubai">Dubai, UAE (GMT+4)</SelectItem>
-                  <SelectItem value="Asia/Shanghai">Shanghai, China (GMT+8)</SelectItem>
-                  <SelectItem value="Asia/Tokyo">Tokyo, Japan (GMT+9)</SelectItem>
-                  <SelectItem value="Australia/Sydney">Sydney, Australia (GMT+10/+11)</SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-muted-foreground">
-                Current time: {new Date().toLocaleString('en-US', { 
-                  timeZone: settings.timezone,
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  timeZoneName: 'short'
-                })}
-              </p>
-            </div>
+            <Label htmlFor="timezone">Timezone</Label>              <Select
+              value={settings.timezone}
+              onValueChange={(value) => handleSettingChange('timezone', value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select timezone" />
+              </SelectTrigger>                <SelectContent>
+                <SelectItem value="Africa/Harare">Harare, Zimbabwe (GMT+2)</SelectItem>
+                <SelectItem value="Africa/Cairo">Cairo, Egypt (GMT+2)</SelectItem>
+                <SelectItem value="Africa/Johannesburg">Johannesburg, South Africa (GMT+2)</SelectItem>
+                <SelectItem value="Europe/Berlin">Berlin, Germany (GMT+1/+2)</SelectItem>
+                <SelectItem value="Europe/Paris">Paris, France (GMT+1/+2)</SelectItem>
+                <SelectItem value="Europe/London">London, UK (GMT/+1)</SelectItem>
+                <SelectItem value="UTC">UTC (GMT+0)</SelectItem>
+                <SelectItem value="America/New_York">Eastern Time (GMT-5/-4)</SelectItem>
+                <SelectItem value="America/Chicago">Central Time (GMT-6/-5)</SelectItem>
+                <SelectItem value="America/Denver">Mountain Time (GMT-7/-6)</SelectItem>
+                <SelectItem value="America/Los_Angeles">Pacific Time (GMT-8/-7)</SelectItem>
+                <SelectItem value="Asia/Dubai">Dubai, UAE (GMT+4)</SelectItem>
+                <SelectItem value="Asia/Shanghai">Shanghai, China (GMT+8)</SelectItem>
+                <SelectItem value="Asia/Tokyo">Tokyo, Japan (GMT+9)</SelectItem>
+                <SelectItem value="Australia/Sydney">Sydney, Australia (GMT+10/+11)</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              Current time: {new Date().toLocaleString('en-US', {
+                timeZone: settings.timezone,
+                hour: '2-digit',
+                minute: '2-digit',
+                timeZoneName: 'short'
+              })}
+            </p>
+          </div>
 
             <div className="space-y-2">
               <Label htmlFor="language">Language</Label>              <Select

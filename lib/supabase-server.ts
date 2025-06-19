@@ -4,7 +4,7 @@ import type { Database } from "@/lib/database.types"
 
 export const createServerClient = async () => {
   try {
-    return createRouteHandlerClient<Database>({ 
+    return createRouteHandlerClient<Database>({
       cookies: await cookies
     })
   } catch (error) {

@@ -93,7 +93,7 @@ export class SessionManager {
         return data
       } catch (error: any) {
         console.error('Database function failed, using direct insert:', error)
-        
+
         // Fallback to direct insert if the function doesn't exist
         const sessionData = {
           user_id: user.user.id,
@@ -132,9 +132,14 @@ export class SessionManager {
   }  // Get all active sessions for current user
   async getSessions(): Promise<UserSession[]> {
     try {
+      console.log('SessionManager: Getting sessions...')
       const { data: user } = await this.supabase.auth.getUser()
-      if (!user.user) return []
+      if (!user.user) {
+        console.log('SessionManager: No authenticated user')
+        return []
+      }
 
+      console.log('SessionManager: User found, querying sessions for user:', user.user.id)
       const { data, error } = await this.supabase
         .from('user_sessions')
         .select('*')
@@ -142,21 +147,38 @@ export class SessionManager {
         .order('last_activity', { ascending: false })
 
       if (error) {
-        console.error('Error fetching sessions:', error)
-        
-        // If table doesn't exist yet, create a current session
+        console.error('SessionManager: Error fetching sessions:', error)
+
+        // If table doesn't exist yet, create a fallback session and provide helpful message
         if (error.code === 'PGRST116' || error.message.includes('relation "user_sessions" does not exist')) {
-          console.log('Sessions table not found, creating fallback session')
+          console.log('SessionManager: Sessions table not found, creating fallback session')
           await this.logSecurityActivity('sign_in', true, 'Current session', navigator.userAgent, {
-            note: 'Initial session - sessions table not configured'
+            note: 'Initial session - sessions table not configured. Please run the setup-sessions-schema.sql script.'
           })
+          
+          // Return a mock session for demo purposes
+          return [{
+            id: 'demo-session',
+            user_id: user.user.id,
+            session_token: 'demo-token',
+            user_agent: navigator.userAgent,
+            ip_address: 'Current session',
+            location: 'Harare, Zimbabwe',
+            device_type: this.getDeviceType(navigator.userAgent),
+            browser_name: this.getBrowserName(navigator.userAgent),
+            is_current: true,
+            last_activity: new Date().toISOString(),
+            created_at: new Date().toISOString(),
+            expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+          }]
         }
         return []
       }
 
+      console.log('SessionManager: Found sessions:', data?.length || 0)
       // If no sessions exist but the table is available, create a current session
       if (!data || data.length === 0) {
-        console.log('No sessions in database, attempting to create current session')
+        console.log('SessionManager: No sessions in database, attempting to create current session')
         const { data: session } = await this.supabase.auth.getSession()
         if (session.session) {
           try {
@@ -166,28 +188,30 @@ export class SessionManager {
               navigator.userAgent,
               'Current session'
             )
-            
+
             if (sessionId) {
+              console.log('SessionManager: Created new session, re-fetching...')
               // Re-fetch sessions after creating one
               const { data: newData, error: newError } = await this.supabase
                 .from('user_sessions')
                 .select('*')
                 .eq('user_id', user.user.id)
                 .order('last_activity', { ascending: false })
-              
+
               if (!newError && newData) {
+                console.log('SessionManager: Re-fetch successful, found sessions:', newData.length)
                 return newData
               }
             }
           } catch (createError) {
-            console.error('Failed to create current session:', createError)
+            console.error('SessionManager: Failed to create current session:', createError)
           }
         }
       }
 
       return data || []
     } catch (error) {
-      console.error('Error in getSessions:', error)
+      console.error('SessionManager: Error in getSessions:', error)
       return []
     }
   }
@@ -259,10 +283,10 @@ export class SessionManager {
 
   // Log security activity
   async logSecurityActivity(
-    activityType: string, 
-    success: boolean = true, 
-    ipAddress?: string, 
-    userAgent?: string, 
+    activityType: string,
+    success: boolean = true,
+    ipAddress?: string,
+    userAgent?: string,
     details: any = {}
   ): Promise<string | null> {
     try {

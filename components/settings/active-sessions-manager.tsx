@@ -12,7 +12,7 @@ import { formatDistanceToNow } from "date-fns"
 export function ActiveSessionsManager() {
   const { supabase } = useSupabase()
   const { toast } = useToast()
-  
+
   const [sessions, setSessions] = useState<UserSession[]>([])
   const [loading, setLoading] = useState(true)
   const [terminating, setTerminating] = useState<string | null>(null)
@@ -36,30 +36,34 @@ export function ActiveSessionsManager() {
   const loadSessions = async () => {
     try {
       const { data: user } = await supabase.auth.getUser()
+      console.log('Supabase user:', user)
       if (!user.user) return
 
       // Load real sessions from database
       const realSessions = await sessionManager.getSessions()
-      
+      console.log('Sessions from sessionManager.getSessions():', realSessions)
+
       // If no sessions exist, create one for the current session
       if (realSessions.length === 0) {
         console.log('No sessions found, creating current session')
         const { data: { session } } = await supabase.auth.getSession()
+        console.log('Current supabase session:', session)
         if (session) {
           // Create a session for the current browser session
           await sessionManager.createSession(
-            session.access_token, 
-            navigator.userAgent, 
+            session.access_token,
+            navigator.userAgent,
             'Current session'
           )
           // Reload sessions after creating current one
           const updatedSessions = await sessionManager.getSessions()
+          console.log('Sessions after createSession:', updatedSessions)
           setSessions(updatedSessions)
         }
       } else {
         setSessions(realSessions)
       }
-      
+
     } catch (error) {
       console.error("Error loading sessions:", error)
       setSessions([])
@@ -81,7 +85,7 @@ export function ActiveSessionsManager() {
     setTerminating(sessionId)
     try {
       const success = await sessionManager.terminateSession(sessionId)
-      
+
       if (success) {
         setSessions(prev => prev.filter(s => s.id !== sessionId))
         toast({
@@ -113,7 +117,7 @@ export function ActiveSessionsManager() {
       const terminatedCount = await sessionManager.terminateAllOtherSessions(
         currentSession?.session_token
       )
-      
+
       if (terminatedCount > 0) {
         // Keep only the current session
         setSessions(prev => prev.filter(s => s.is_current))
@@ -150,9 +154,9 @@ export function ActiveSessionsManager() {
         <Monitor className="h-8 w-8 mx-auto mb-2" />
         <p>No active sessions found</p>
         <p className="text-xs mt-2">Sessions will be automatically created when you sign in</p>
-        <Button 
-          variant="outline" 
-          size="sm" 
+        <Button
+          variant="outline"
+          size="sm"
           onClick={loadSessions}
           className="mt-4"
         >
@@ -176,15 +180,15 @@ export function ActiveSessionsManager() {
           >
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Refresh"}
           </Button>
-          {sessions.filter(s => !s.is_current).length > 0 && (            <Button
-              variant="outline"
-              size="sm"
-              onClick={terminateAllOtherSessions}
-              className="text-destructive hover:text-destructive"
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Terminate All Others
-            </Button>
+          {sessions.filter(s => !s.is_current).length > 0 && (<Button
+            variant="outline"
+            size="sm"
+            onClick={terminateAllOtherSessions}
+            className="text-destructive hover:text-destructive"
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Terminate All Others
+          </Button>
           )}
         </div>
       </div>
@@ -199,7 +203,7 @@ export function ActiveSessionsManager() {
               <div className="mt-1">
                 {getDeviceIcon(session.device_type)}
               </div>
-              
+
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
                   <span className="font-medium">
@@ -211,7 +215,7 @@ export function ActiveSessionsManager() {
                     </Badge>
                   )}
                 </div>
-                
+
                 <div className="flex items-center gap-4 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <Clock className="h-3 w-3" />
@@ -227,14 +231,14 @@ export function ActiveSessionsManager() {
                     <span>IP: {session.ip_address}</span>
                   )}
                 </div>
-                
+
                 <div className="text-xs text-muted-foreground">
-                  {session.device_type.charAt(0).toUpperCase() + session.device_type.slice(1)} • 
+                  {session.device_type.charAt(0).toUpperCase() + session.device_type.slice(1)} •
                   Created {formatDistanceToNow(new Date(session.created_at), { addSuffix: true })}
                 </div>
               </div>
             </div>
-            
+
             {!session.is_current && (
               <Button
                 variant="outline"
@@ -256,7 +260,7 @@ export function ActiveSessionsManager() {
           </div>
         ))}
       </div>
-      
+
       <div className="text-center pt-4">
         <p className="text-xs text-muted-foreground">
           Sessions automatically expire after 30 days of inactivity.
