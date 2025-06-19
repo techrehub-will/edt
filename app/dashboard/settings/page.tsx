@@ -260,7 +260,7 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
-          {/* <Card>
+           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Shield className="h-5 w-5" />
@@ -273,9 +273,9 @@ export default function SettingsPage() {
             <CardContent>
               <ActiveSessionsManager />
             </CardContent>
-          </Card> */}
+          </Card> 
 
-          {/* <Card>
+           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Shield className="h-5 w-5" />
@@ -288,7 +288,7 @@ export default function SettingsPage() {
             <CardContent>
               <SecurityActivityLog />
             </CardContent>
-          </Card> */}
+          </Card> 
         </TabsContent>
 
         <TabsContent value="danger" className="space-y-6">
