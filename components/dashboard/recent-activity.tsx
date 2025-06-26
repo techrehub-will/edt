@@ -9,27 +9,58 @@ interface RecentActivityProps {
 }
 
 export function RecentActivity({ logs, projects }: RecentActivityProps) {
-  // Combine logs and projects and sort by date
-  const activities = [
-    ...logs.map((log) => ({
-      ...log,
-      type: "log",
-      date: new Date(log.created_at),
-    })),
-    ...projects.map((project) => ({
-      ...project,
-      type: "project",
-      date: new Date(project.created_at),
-    })),
-  ]
-    .sort((a, b) => b.date.getTime() - a.date.getTime())
-    .slice(0, 5)
+  // Determine what to show based on availability
+  let activities: any[] = []
+
+  if (logs.length && projects.length) {
+    activities = [
+      ...logs.map((log) => ({
+        ...log,
+        type: "log",
+        date: new Date(log.created_at),
+      })),
+      ...projects.map((project) => ({
+        ...project,
+        type: "project",
+        date: new Date(project.created_at),
+      })),
+    ]
+      .sort((a, b) => b.date.getTime() - a.date.getTime())
+      .slice(0, 5)
+  } else if (logs.length) {
+    activities = logs
+      .map((log) => ({
+        ...log,
+        type: "log",
+        date: new Date(log.created_at),
+      }))
+      .sort((a, b) => b.date.getTime() - a.date.getTime())
+      .slice(0, 5)
+  } else if (projects.length) {
+    activities = projects
+      .map((project) => ({
+        ...project,
+        type: "project",
+        date: new Date(project.created_at),
+      }))
+      .sort((a, b) => b.date.getTime() - a.date.getTime())
+      .slice(0, 5)
+  }
+
+  const description =
+    logs.length && projects.length
+      ? "Your latest logs and projects"
+      : logs.length
+      ? "Your recent technical logs"
+      : projects.length
+      ? "Your recent projects"
+      : "No recent activity"
 
   return (
     <Card className="card-hover">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg">Recent Activity</CardTitle>
-        <CardDescription>Your latest logs and projects</CardDescription>
+        <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">

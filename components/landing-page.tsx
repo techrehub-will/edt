@@ -997,12 +997,12 @@ export default function LandingPage() {
                   {/* Social Proof */}
                   <div className="pt-8 border-t border-primary-foreground/20">
                     <p className="text-sm text-primary-foreground/80 mb-4">
-                      Trusted by engineering professionals worldwide
+                      Industry Standard Tech-stack
                     </p>
                     <div className="flex items-center justify-center gap-6 text-xs text-primary-foreground/70">
                       <div className="flex items-center gap-2">
                         <Award className="h-4 w-4" />
-                        <span>Industry Leading</span>
+                        <span>Fast Hosting</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Shield className="h-4 w-4" />
@@ -1010,7 +1010,7 @@ export default function LandingPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         <Users className="h-4 w-4" />
-                        <span>1000+ Engineers</span>
+                        <span>Target: 1000+ Engineers</span>
                       </div>
                     </div>
                   </div>

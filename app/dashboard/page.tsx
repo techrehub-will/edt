@@ -25,7 +25,7 @@ export default async function DashboardPage() {
     .select("*")
     .eq("user_id", user?.id)
     .order("created_at", { ascending: false })
-    .limit(5)
+    
 
   // Fetch recent logs
   const { data: logs } = await supabase
@@ -33,7 +33,7 @@ export default async function DashboardPage() {
     .select("*")
     .eq("user_id", user?.id)
     .order("created_at", { ascending: false })
-    .limit(3)
+  
 
   // Fetch recent projects
   const { data: projects } = await supabase
@@ -41,15 +41,17 @@ export default async function DashboardPage() {
     .select("*")
     .eq("user_id", user?.id)
     .order("created_at", { ascending: false })
-    .limit(3)
+    
 
   return (
     <div className="space-y-6">
       <DashboardHeader />
       <DashboardCards goals={goals || []} logs={logs || []} projects={projects || []} />
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-3">
         <GoalProgress goals={goals || []} />
-        <RecentActivity logs={logs || []} projects={projects || []} />
+        <RecentActivity logs={logs || []} projects={[]} />
+        <RecentActivity logs={ []} projects={projects || []} />
+
       </div>
     </div>
   )
