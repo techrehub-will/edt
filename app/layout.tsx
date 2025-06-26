@@ -2,14 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
-import { Toaster } from "@/components/ui/toaster"
-import { SupabaseProvider } from "@/lib/supabase-provider"
-// import { AuthEventTracker } from "@/components/auth-event-tracker"
-import PWALifecycle from "@/components/pwa-lifecycle"
-import PWAInstallPrompt from "@/components/pwa-install-prompt"
-import { Analytics } from '@vercel/analytics/react'
-import { SpeedInsights } from '@vercel/speed-insights/next'
+import { Providers } from "@/components/providers"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -203,17 +196,10 @@ export default function RootLayout({
         />
         <meta name="msvalidate.01" content="CEDC65F3D2DA389E6CDCCF3BEA1898BE" />
         <meta name="yandex-verification" content="0c963589a54adf2e" />
-      </head>      <body className={inter.className} suppressHydrationWarning>        <SupabaseProvider>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          {/* <AuthEventTracker /> */}
-          <PWALifecycle />
+      </head>      <body className={inter.className} suppressHydrationWarning>
+        <Providers>
           {children}
-          <PWAInstallPrompt />
-          <Toaster />
-          <Analytics />
-          <SpeedInsights />
-        </ThemeProvider>
-      </SupabaseProvider>
+        </Providers>
       </body>
     </html>
   )

@@ -7,15 +7,20 @@ export function useAuthSessionTracking() {
   const { supabase } = useSupabase()
 
   useEffect(() => {
+    // Only run on client side
+    if (typeof window === 'undefined') return
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event === 'SIGNED_IN' && session) {
           // User signed in, create session
-          const sessionToken = session.access_token || `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+          const timestamp = new Date().getTime()
+          const randomId = Math.random().toString(36).substr(2, 9)
+          const sessionToken = session.access_token || `session_${timestamp}_${randomId}`
 
           await sessionManager.createSession(
             sessionToken,
-            navigator.userAgent,
+            typeof navigator !== 'undefined' ? navigator.userAgent : 'Unknown',
             'Current session' // In production, you'd get real IP
           )
 

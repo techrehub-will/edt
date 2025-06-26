@@ -2,16 +2,17 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { useToast } from "@/components/ui/use-toast"
+import { useToast } from "@/hooks/use-toast"
 import { useSupabase } from "@/lib/supabase-provider"
 import { AlertCircle, Loader2 } from "lucide-react"
+import Turnstile from "react-turnstile"
 
 export function LoginForm() {
   const router = useRouter()
@@ -21,12 +22,41 @@ export function LoginForm() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setError(null) // Clear any previous errors
 
+    if (!turnstileToken) {
+      setError("Please complete the CAPTCHA")
+      setIsLoading(false)
+      toast({
+        title: "Error",
+        description: "Please complete the CAPTCHA",
+        variant: "destructive",
+      })
+      return
+    }
+
     try {
+      // First verify the Turnstile token
+      const verifyResponse = await fetch("/api/auth/turnstile/verify", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ token: turnstileToken }),
+      })
+
+      const verifyResult = await verifyResponse.json()
+
+      if (!verifyResponse.ok || !verifyResult.success) {
+        throw new Error(verifyResult.error || "CAPTCHA verification failed")
+      }
+
+      // If CAPTCHA is valid, proceed with login
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -56,15 +86,20 @@ export function LoginForm() {
       setIsLoading(false)
     }
   }
+
   const handleGoogleLogin = async () => {
     setIsLoading(true)
     setError(null) // Clear any previous errors
 
     try {
+      const redirectTo = typeof window !== 'undefined' 
+        ? `${window.location.origin}/auth/callback`
+        : '/auth/callback'
+        
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo,
         },
       })
 
@@ -96,59 +131,72 @@ export function LoginForm() {
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
-      
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>          <Input
-            id="email"
-            type="email"
-            placeholder="name@example.com"
-            value={email}
-            onChange={(e) => {
-              setEmail(e.target.value)
-              if (error) setError(null) // Clear error when user types
-            }}
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
+      <form onSubmit={handleSubmit}>
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              placeholder="name@example.com"
+              type="email"
+              autoCapitalize="none"
+              autoComplete="email"
+              autoCorrect="off"
+              disabled={isLoading}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div>
             <Label htmlFor="password">Password</Label>
-            <Link href="/forgot-password" className="text-sm text-primary hover:underline">
+            <Input
+              id="password"
+              placeholder="Enter your password"
+              type="password"
+              autoComplete="current-password"
+              disabled={isLoading}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          <div className="flex justify-center">
+            <Turnstile
+              sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ""}
+              onVerify={(token) => setTurnstileToken(token)}
+              onError={() => {
+                setError("CAPTCHA verification failed")
+                setTurnstileToken(null)
+              }}
+              onExpire={() => {
+                setTurnstileToken(null)
+              }}
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Button disabled={isLoading || !turnstileToken} type="submit">
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Sign In
+            </Button>
+            <Button
+              variant="secondary"
+              type="button"
+              onClick={handleGoogleLogin}
+              disabled={isLoading}
+            >
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Sign In with Google
+            </Button>
+            <Link
+              href="/forgot-password"
+              className="text-sm text-muted-foreground hover:text-primary"
+            >
               Forgot password?
             </Link>
-          </div>          <Input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => {
-              setPassword(e.target.value)
-              if (error) setError(null) // Clear error when user types
-            }}
-            required
-          />
-        </div>        <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {isLoading ? "Signing in..." : "Sign In"}
-        </Button>
+          </div>
+        </div>
       </form>
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
-        </div>
-      </div>      <Button variant="outline" type="button" className="w-full" onClick={handleGoogleLogin} disabled={isLoading}>
-        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-        {isLoading ? "Connecting..." : "Continue with Google"}
-      </Button>
-      <div className="text-center text-sm">
-        Don't have an account?{" "}
-        <Link href="/register" className="text-primary hover:underline">
-          Sign up
-        </Link>
-      </div>
     </div>
   )
 }
