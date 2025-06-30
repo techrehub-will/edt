@@ -2,8 +2,7 @@
 
 _A comprehensive engineering project management and tracking application with AI-powered insights_
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/william-s-projects-7db35d0b/v0-engineering-development-tracke)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.dev-black?style=for-the-badge)](https://v0.dev/chat/projects/FZLK6u3nIsJ)
+[![Deployed on Vercel](https://edt.techreub.co.zw)[https://edt.techrehub.co.zw]
 
 ## Overview
 
@@ -94,15 +93,15 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Deployment
 
-Your project is live at:
+Project is live at:
 
-**[https://vercel.com/william-s-projects-7db35d0b/v0-engineering-development-tracke](https://vercel.com/william-s-projects-7db35d0b/v0-engineering-development-tracke)**
+**[https://edt.techrehub.co.zw](https://edt.techrehub.co.zw)**
 
 ## Build your app
 
 Continue building your app on:
 
-**[https://v0.dev/chat/projects/FZLK6u3nIsJ](https://v0.dev/chat/projects/FZLK6u3nIsJ)**
+run npm run build
 
 ## Documentation
 
@@ -118,13 +117,3 @@ Continue building your app on:
 - **Authentication**: Supabase Auth
 - **Deployment**: Vercel
 
-## How It Works
-
-1. Create and modify your project using [v0.dev](https://v0.dev)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
-
-## Contributing
-
-This project is continuously developed through v0.dev. Major features and improvements are implemented through the AI-assisted development process.
