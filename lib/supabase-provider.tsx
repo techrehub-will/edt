@@ -16,7 +16,14 @@ type SupabaseContext = {
 const Context = createContext<SupabaseContext | undefined>(undefined)
 
 export function SupabaseProvider({ children }: { children: React.ReactNode }) {
-  const [supabase] = useState(() => createClientComponentClient<Database>())
+  const [supabase] = useState(() => {
+    // Check if environment variables are available
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      // Return a mock client for build time or when env vars are missing
+      return null as any
+    }
+    return createClientComponentClient<Database>()
+  })
   const [isConnected, setIsConnected] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -24,6 +31,13 @@ export function SupabaseProvider({ children }: { children: React.ReactNode }) {
     let subscription: any = null
 
     const initializeAuth = async () => {
+      // Skip initialization if supabase client is not available
+      if (!supabase) {
+        setError("Demo Mode - Database not connected")
+        setIsConnected(false)
+        return
+      }
+
       try {
         // Test connection first
         const { data, error: sessionError } = await supabase.auth.getSession()

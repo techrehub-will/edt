@@ -1,7 +1,16 @@
-import withPWA from 'next-pwa';
+import withPWAInit from '@ducanh2912/next-pwa';
+
+const withPWA = withPWAInit({
+  dest: 'public',
+  disable: false,
+  register: true,
+  skipWaiting: true,
+});
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  skipTrailingSlashRedirect: true,
+  staticPageGenerationTimeout: 180,
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -73,21 +82,4 @@ const nextConfig = {
   },
 }
 
-export default withPWA({
-  dest: 'public',
-  register: true,
-  skipWaiting: true,
-  disable: false, // Enable PWA in development for testing
-  runtimeCaching: [
-    {
-      urlPattern: /^https?.*/,
-      handler: 'NetworkFirst',
-      options: {
-        cacheName: 'offlineCache',
-        expiration: {
-          maxEntries: 200,
-        },
-      },
-    },
-  ],
-})(nextConfig);
+export default withPWA(nextConfig);
